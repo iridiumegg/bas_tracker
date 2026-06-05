@@ -4,6 +4,6 @@
 // ──────────────────────────────────────────────────────────────────────────────
 
 export const CURRENT_STATUS = {
-  message: "AFK",
+  message: "Remote: reviewing logic based off TAB reports",
   date: "2026-06-05",
 };
