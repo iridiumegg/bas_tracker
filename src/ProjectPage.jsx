@@ -2,11 +2,9 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { PRIORITY_CONFIG, STATUS_CONFIG, CATEGORIES, PRIORITIES, STATUSES } from "./config.js";
 import StatusBar from "./StatusBar.jsx";
-import { useProjectItems } from "./useProjectItems.js";
 
-export default function ProjectPage({ meta, items: initialItems }) {
+export default function ProjectPage({ meta, items }) {
   const categories = meta.categories || CATEGORIES;
-  const { items, setStatus } = useProjectItems(meta.id, initialItems);
   const [filterCat, setFilterCat] = useState("All");
   const [filterPri, setFilterPri] = useState("All");
   const [filterStat, setFilterStat] = useState("All");
@@ -45,26 +43,58 @@ export default function ProjectPage({ meta, items: initialItems }) {
         textarea:focus { border-color: #3a5080; }
         .back-link { color: #4a5570; font-size: 11px; text-decoration: none; letter-spacing: 0.08em; }
         .back-link:hover { color: #8ab4f8; }
+        .filter-scroll { display: flex; flex-wrap: wrap; gap: 18px; align-items: center; }
+        .col-headers { display: grid; grid-template-columns: 52px 70px 130px 140px 1fr; gap: 12px; }
+        .item-grid  { display: grid; grid-template-columns: 52px 70px 130px 140px 1fr; gap: 12px; align-items: start; }
+        .expand-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 14px; }
+        .status-row { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+        @media (max-width: 640px) {
+          .col-headers { display: none; }
+          .item-grid  { grid-template-columns: 64px 1fr; }
+          .item-grid .hide-mobile { display: none; }
+          .expand-grid { grid-template-columns: 1fr; }
+          .filter-scroll { gap: 10px; overflow-x: auto; flex-wrap: nowrap; padding-bottom: 4px; }
+          .status-row { flex-direction: column; align-items: flex-start; gap: 8px; }
+          .status-row .status-buttons { flex-wrap: wrap; }
+          .header-right { display: none; }
+          .counts-mobile { display: flex !important; }
+        }
+        @media (min-width: 641px) {
+          .counts-mobile { display: none !important; }
+        }
       `}</style>
 
       {/* Header */}
-      <div style={{ background: "#0d1017", borderBottom: "1px solid #1e2330", padding: "16px 28px" }}>
+      <div style={{ background: "#0d1017", borderBottom: "1px solid #1e2330", padding: "16px 16px 14px" }}>
         <div style={{ marginBottom: 10 }}>
           <Link to="/" className="back-link">← All Projects</Link>
         </div>
-        <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", flexWrap: "wrap", gap: 12 }}>
-          <div>
-            <div style={{ fontSize: 10, color: "#4a5570", letterSpacing: "0.12em", marginBottom: 4, textTransform: "uppercase" }}>
+        <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", flexWrap: "wrap", gap: 10 }}>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontSize: 10, color: "#4a5570", letterSpacing: "0.1em", marginBottom: 4, textTransform: "uppercase" }}>
               {meta.label}
             </div>
-            <div style={{ fontSize: 22, fontWeight: 600, color: "#e0e4ef", fontFamily: "'IBM Plex Sans', sans-serif", letterSpacing: "-0.02em" }}>
+            <div style={{ fontSize: 20, fontWeight: 600, color: "#e0e4ef", fontFamily: "'IBM Plex Sans', sans-serif", letterSpacing: "-0.02em" }}>
               TAB Report — BAS Action Items
             </div>
             <div style={{ fontSize: 11, color: "#4a5570", marginTop: 3 }}>
-              Source: {meta.source} &nbsp;·&nbsp; Generated {meta.generated}
+              {meta.source} &nbsp;·&nbsp; {meta.generated}
+            </div>
+            {/* Mobile counts */}
+            <div className="counts-mobile" style={{ gap: 14, marginTop: 10 }}>
+              {[
+                { label: "OPEN", val: counts.open, color: "#e74c3c" },
+                { label: "IN PROG", val: counts.inProgress, color: "#f1c40f" },
+                { label: "RESOLVED", val: counts.resolved, color: "#2ecc71" },
+              ].map(s => (
+                <div key={s.label} style={{ textAlign: "center" }}>
+                  <div style={{ fontSize: 20, fontWeight: 600, color: s.color, lineHeight: 1 }}>{s.val}</div>
+                  <div style={{ fontSize: 8, color: "#4a5570", letterSpacing: "0.1em", marginTop: 2 }}>{s.label}</div>
+                </div>
+              ))}
             </div>
           </div>
-          <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 10 }}>
+          <div className="header-right" style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 10 }}>
             <StatusBar />
             <div style={{ display: "flex", gap: 16 }}>
               {[
@@ -83,42 +113,39 @@ export default function ProjectPage({ meta, items: initialItems }) {
       </div>
 
       {/* Filters */}
-      <div style={{ padding: "12px 28px", borderBottom: "1px solid #161b26", display: "flex", flexWrap: "wrap", gap: 18, alignItems: "center" }}>
-        {[
-          { label: "Category", opts: categories, val: filterCat, set: setFilterCat },
-          { label: "Priority", opts: PRIORITIES, val: filterPri, set: setFilterPri },
-          { label: "Status",   opts: STATUSES,   val: filterStat, set: setFilterStat },
-        ].map(f => (
-          <div key={f.label} style={{ display: "flex", alignItems: "center", gap: 6 }}>
-            <span style={{ fontSize: 10, color: "#4a5570", letterSpacing: "0.08em", textTransform: "uppercase" }}>{f.label}:</span>
-            <div style={{ display: "flex", gap: 4, flexWrap: "wrap" }}>
-              {f.opts.map(o => (
-                <button key={o} className="filter-btn"
-                  onClick={() => f.set(o)}
-                  style={{
-                    background: f.val === o ? "#1e2a40" : "transparent",
-                    color: f.val === o ? "#8ab4f8" : "#4a5570",
-                    border: `1px solid ${f.val === o ? "#2d4470" : "#1e2330"}`,
-                  }}>
-                  {o}
-                </button>
-              ))}
+      <div style={{ padding: "10px 16px", borderBottom: "1px solid #161b26" }}>
+        <div className="filter-scroll">
+          {[
+            { label: "Cat", opts: categories, val: filterCat, set: setFilterCat },
+            { label: "Pri", opts: PRIORITIES, val: filterPri, set: setFilterPri },
+            { label: "Status", opts: STATUSES, val: filterStat, set: setFilterStat },
+          ].map(f => (
+            <div key={f.label} style={{ display: "flex", alignItems: "center", gap: 5, flexShrink: 0 }}>
+              <span style={{ fontSize: 10, color: "#4a5570", letterSpacing: "0.08em", textTransform: "uppercase" }}>{f.label}:</span>
+              <div style={{ display: "flex", gap: 3, flexWrap: "nowrap" }}>
+                {f.opts.map(o => (
+                  <button key={o} className="filter-btn"
+                    onClick={() => f.set(o)}
+                    style={{
+                      background: f.val === o ? "#1e2a40" : "transparent",
+                      color: f.val === o ? "#8ab4f8" : "#4a5570",
+                      border: `1px solid ${f.val === o ? "#2d4470" : "#1e2330"}`,
+                      whiteSpace: "nowrap",
+                    }}>
+                    {o}
+                  </button>
+                ))}
+              </div>
             </div>
-          </div>
-        ))}
-        <span style={{ marginLeft: "auto", fontSize: 11, color: "#4a5570" }}>
-          {filtered.length} of {items.length} items
-        </span>
+          ))}
+          <span style={{ marginLeft: "auto", fontSize: 11, color: "#4a5570", flexShrink: 0 }}>
+            {filtered.length}/{items.length}
+          </span>
+        </div>
       </div>
 
-      {/* Column Headers */}
-      <div style={{
-        display: "grid",
-        gridTemplateColumns: "52px 70px 130px 140px 1fr",
-        padding: "8px 28px",
-        borderBottom: "1px solid #161b26",
-        fontSize: 9, color: "#3a4255", letterSpacing: "0.12em", textTransform: "uppercase", gap: 12,
-      }}>
+      {/* Column Headers — hidden on mobile via CSS */}
+      <div className="col-headers" style={{ padding: "8px 16px", borderBottom: "1px solid #161b26", fontSize: 9, color: "#3a4255", letterSpacing: "0.12em", textTransform: "uppercase" }}>
         <div>#</div><div>Priority</div><div>Unit</div><div>Category</div><div>Issue / Action</div>
       </div>
 
@@ -132,29 +159,42 @@ export default function ProjectPage({ meta, items: initialItems }) {
           return (
             <div key={item.id}>
               <div
-                className="item-row"
+                className="item-row item-grid"
                 onClick={() => setExpandedId(isExpanded ? null : item.id)}
                 style={{
-                  display: "grid",
-                  gridTemplateColumns: "52px 70px 130px 140px 1fr",
-                  padding: "11px 28px",
+                  padding: "11px 16px",
                   borderBottom: "1px solid #111520",
-                  gap: 12,
-                  alignItems: "start",
                   background: isExpanded ? "#0f1420" : idx % 2 === 0 ? "#0b0d11" : "#0d0f14",
                 }}
               >
-                <div style={{ fontSize: 11, color: "#2a3045", paddingTop: 2 }}>{String(item.id).padStart(2, "0")}</div>
-                <div>
+                {/* # — hidden on mobile, priority shown instead */}
+                <div className="hide-mobile" style={{ fontSize: 11, color: "#2a3045", paddingTop: 2 }}>
+                  {String(item.id).padStart(2, "0")}
+                </div>
+                {/* On mobile this cell shows priority badge */}
+                <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
                   <span style={{
                     fontSize: 9, fontWeight: 600, letterSpacing: "0.1em",
                     color: pc.text, background: pc.bg, border: `1px solid ${pc.border}`,
-                    padding: "2px 6px", borderRadius: 2,
+                    padding: "2px 5px", borderRadius: 2, display: "inline-block",
                   }}>{pc.label}</span>
+                  {/* Status badge — shown on mobile only */}
+                  <span style={{
+                    fontSize: 8, fontWeight: 600, letterSpacing: "0.08em",
+                    color: sc.text, background: sc.bg, border: `1px solid ${sc.border}`,
+                    padding: "2px 5px", borderRadius: 2, display: "inline-block",
+                  }}>{sc.label}</span>
                 </div>
-                <div style={{ fontSize: 12, color: "#8ab4f8", fontWeight: 500, paddingTop: 1 }}>{item.unit}</div>
-                <div style={{ fontSize: 11, color: "#5a6580", paddingTop: 2 }}>{item.category}</div>
+
+                <div className="hide-mobile" style={{ fontSize: 12, color: "#8ab4f8", fontWeight: 500, paddingTop: 1 }}>{item.unit}</div>
+                <div className="hide-mobile" style={{ fontSize: 11, color: "#5a6580", paddingTop: 2 }}>{item.category}</div>
+
+                {/* Issue — on mobile this is the main content column */}
                 <div>
+                  {/* Mobile: show unit above issue */}
+                  <div style={{ fontSize: 11, color: "#8ab4f8", fontWeight: 500, marginBottom: 3, display: "none" }} className="show-mobile-unit">
+                    {item.unit}
+                  </div>
                   <div style={{ fontSize: 12, color: "#a0a8bc", lineHeight: 1.5 }}>{item.issue}</div>
                   <div style={{ fontSize: 11, color: "#4a5570", marginTop: 3 }}>
                     ↳ {item.action.substring(0, 80)}{item.action.length > 80 ? "…" : ""}
@@ -166,10 +206,10 @@ export default function ProjectPage({ meta, items: initialItems }) {
                 <div style={{
                   background: "#0d1017",
                   borderBottom: "1px solid #1e2535",
-                  padding: "16px 28px 16px calc(28px + 52px + 12px)",
+                  padding: "14px 16px",
                   borderLeft: `3px solid ${pc.border}`,
                 }}>
-                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20, marginBottom: 14 }}>
+                  <div className="expand-grid">
                     <div>
                       <div style={{ fontSize: 9, color: "#3a4255", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: 5 }}>Full Issue</div>
                       <div style={{ fontSize: 12, color: "#c0c8d8", lineHeight: 1.6 }}>{item.issue}</div>
@@ -180,19 +220,20 @@ export default function ProjectPage({ meta, items: initialItems }) {
                     </div>
                   </div>
 
-                  <div style={{ display: "flex", alignItems: "center", gap: 16, flexWrap: "wrap" }}>
+                  <div className="status-row">
                     <div style={{ fontSize: 10, color: "#3a4255" }}>
                       Source: <span style={{ color: "#5a6580" }}>{item.source}</span>
                     </div>
-                    <div style={{ display: "flex", alignItems: "center", gap: 6, marginLeft: "auto" }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }} className="status-buttons">
                       <span style={{ fontSize: 10, color: "#3a4255", letterSpacing: "0.08em" }}>STATUS:</span>
                       {Object.entries(STATUS_CONFIG).map(([key, cfg]) => (
                         <button key={key} className="status-btn"
-                          onClick={e => { e.stopPropagation(); setStatus(item.id, key); }}
+                          onClick={e => { e.stopPropagation(); }}
                           style={{
                             background: item.status === key ? cfg.bg : "transparent",
                             color: item.status === key ? cfg.text : "#3a4255",
                             border: `1px solid ${item.status === key ? cfg.border : "#1e2330"}`,
+                            opacity: 0.6, cursor: "default",
                           }}>
                           {cfg.label}
                         </button>
@@ -240,7 +281,7 @@ export default function ProjectPage({ meta, items: initialItems }) {
         </div>
       )}
 
-      <div style={{ padding: "20px 28px", borderTop: "1px solid #111520", fontSize: 10, color: "#2a3045" }}>
+      <div style={{ padding: "20px 16px", borderTop: "1px solid #111520", fontSize: 10, color: "#2a3045" }}>
         {meta.label} · TAB Review {meta.generated}
       </div>
     </div>

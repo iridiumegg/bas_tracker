@@ -1,13 +1,25 @@
 import { Link } from "react-router-dom";
 import { PROJECTS } from "./projects/index.js";
 import StatusBar from "./StatusBar.jsx";
-import { getStoredCounts } from "./useProjectItems.js";
-import { getChecklistCounts } from "./ChecklistPage.jsx";
+
+function getTabCounts(items) {
+  return {
+    open: items.filter(i => i.status === "OPEN").length,
+    inProgress: items.filter(i => i.status === "IN_PROGRESS").length,
+    resolved: items.filter(i => i.status === "RESOLVED").length,
+    total: items.length,
+  };
+}
+
+function getChecklistCounts(items) {
+  const done = items.filter(i => i.done).length;
+  return { done, remaining: items.length - done, total: items.length };
+}
 
 function ProjectCard({ meta, items }) {
   const isChecklist = meta.type === "checklist";
-  const cl = isChecklist ? getChecklistCounts(meta.id, items) : null;
-  const s = isChecklist ? null : getStoredCounts(meta.id, items);
+  const cl = isChecklist ? getChecklistCounts(items) : null;
+  const s = isChecklist ? null : getTabCounts(items);
   const pct = isChecklist
     ? (cl.total ? Math.round((cl.done / cl.total) * 100) : 0)
     : (s.total ? Math.round((s.resolved / s.total) * 100) : 0);
@@ -83,28 +95,33 @@ export default function Home() {
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap');
         * { box-sizing: border-box; }
+        @media (max-width: 640px) {
+          .home-statusbar { display: none !important; }
+          .home-padding { padding: 16px 14px !important; }
+          .home-title { font-size: 20px !important; }
+        }
       `}</style>
 
       {/* Header */}
-      <div style={{ background: "#0d1017", borderBottom: "1px solid #1e2330", padding: "20px 28px 16px" }}>
+      <div style={{ background: "#0d1017", borderBottom: "1px solid #1e2330", padding: "20px 28px 16px" }} className="home-padding">
         <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", flexWrap: "wrap", gap: 12 }}>
           <div>
             <div style={{ fontSize: 10, color: "#4a5570", letterSpacing: "0.12em", marginBottom: 4, textTransform: "uppercase" }}>
               Nathan Stewart · ES2 · Building Automation Systems
             </div>
-            <div style={{ fontSize: 24, fontWeight: 600, color: "#e0e4ef", fontFamily: "'IBM Plex Sans', sans-serif", letterSpacing: "-0.02em" }}>
+            <div className="home-title" style={{ fontSize: 24, fontWeight: 600, color: "#e0e4ef", fontFamily: "'IBM Plex Sans', sans-serif", letterSpacing: "-0.02em" }}>
               Active Engagements
             </div>
             <div style={{ fontSize: 11, color: "#4a5570", marginTop: 3 }}>
               {PROJECTS.length} active project{PROJECTS.length !== 1 ? "s" : ""}
             </div>
           </div>
-          <StatusBar />
+          <div className="home-statusbar"><StatusBar /></div>
         </div>
       </div>
 
       {/* Phases */}
-      <div style={{ padding: "24px 28px" }}>
+      <div style={{ padding: "24px 28px" }} className="home-padding">
         {Object.entries(phases).map(([phase, projects]) => (
           <div key={phase} style={{ marginBottom: 32 }}>
             <div style={{
