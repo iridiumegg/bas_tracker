@@ -2,10 +2,15 @@ import { Link } from "react-router-dom";
 import { PROJECTS } from "./projects/index.js";
 import StatusBar from "./StatusBar.jsx";
 import { getStoredCounts } from "./useProjectItems.js";
+import { getChecklistCounts } from "./ChecklistPage.jsx";
 
 function ProjectCard({ meta, items }) {
-  const s = getStoredCounts(meta.id, items);
-  const pct = s.total ? Math.round((s.resolved / s.total) * 100) : 0;
+  const isChecklist = meta.type === "checklist";
+  const cl = isChecklist ? getChecklistCounts(meta.id, items) : null;
+  const s = isChecklist ? null : getStoredCounts(meta.id, items);
+  const pct = isChecklist
+    ? (cl.total ? Math.round((cl.done / cl.total) * 100) : 0)
+    : (s.total ? Math.round((s.resolved / s.total) * 100) : 0);
 
   return (
     <Link
@@ -36,12 +41,16 @@ function ProjectCard({ meta, items }) {
       </div>
 
       <div style={{ display: "flex", gap: 16 }}>
-        {[
+        {(isChecklist ? [
+          { label: "COMPLETE",  val: cl.done,      color: "#2ecc71" },
+          { label: "REMAINING", val: cl.remaining, color: "#f1c40f" },
+          { label: "TOTAL",     val: cl.total,     color: "#4a5570" },
+        ] : [
           { label: "OPEN",     val: s.open,       color: "#e74c3c" },
           { label: "IN PROG",  val: s.inProgress, color: "#f1c40f" },
           { label: "RESOLVED", val: s.resolved,   color: "#2ecc71" },
-          { label: "TOTAL",    val: s.total,       color: "#4a5570" },
-        ].map(x => (
+          { label: "TOTAL",    val: s.total,      color: "#4a5570" },
+        ]).map(x => (
           <div key={x.label} style={{ textAlign: "center" }}>
             <div style={{ fontSize: 20, fontWeight: 600, color: x.color, lineHeight: 1 }}>{x.val}</div>
             <div style={{ fontSize: 8, color: "#3a4255", letterSpacing: "0.1em", marginTop: 2 }}>{x.label}</div>

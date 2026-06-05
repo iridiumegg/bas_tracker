@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Home from "./Home.jsx";
 import ProjectPage from "./ProjectPage.jsx";
+import ChecklistPage from "./ChecklistPage.jsx";
 import { PROJECTS } from "./projects/index.js";
 
 export default function App() {
@@ -12,7 +13,11 @@ export default function App() {
           <Route
             key={meta.id}
             path={`/${meta.id}`}
-            element={<ProjectPage meta={meta} items={items} />}
+            element={
+              meta.type === "checklist"
+                ? <ChecklistPage meta={meta} items={items} />
+                : <ProjectPage meta={meta} items={items} />
+            }
           />
         ))}
       </Routes>
