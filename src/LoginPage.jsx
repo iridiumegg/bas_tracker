@@ -46,12 +46,11 @@ export default function LoginPage() {
       `}</style>
       <div style={{ width: "100%", maxWidth: 360, padding: "0 20px" }}>
         <div style={{ marginBottom: 28, textAlign: "center" }}>
-          <div style={{ fontSize: 10, color: "#4a5570", letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: 6 }}>
-            Nathan Stewart · ES2
-          </div>
-          <div style={{ fontSize: 22, fontWeight: 600, color: "#e0e4ef", fontFamily: "'IBM Plex Sans', sans-serif" }}>
-            BAS Action Tracker
-          </div>
+          <img
+            src="https://i.redd.it/ive-been-making-custom-factorio-buildings-for-the-past-6-v0-qlp4zogo71we1.gif?width=900&auto=webp&s=8dcc26ede204fdf867895bd262f2f3613bee0267"
+            alt=""
+            style={{ width: "100%", borderRadius: 6, display: "block" }}
+          />
         </div>
 
         {/* Mode tabs */}
