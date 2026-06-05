@@ -47,7 +47,7 @@ export default function LoginPage() {
       <div style={{ width: "100%", maxWidth: 360, padding: "0 20px" }}>
         <div style={{ marginBottom: 28, textAlign: "center" }}>
           <img
-            src="https://i.redd.it/ive-been-making-custom-factorio-buildings-for-the-past-6-v0-qlp4zogo71we1.gif?width=900&auto=webp&s=8dcc26ede204fdf867895bd262f2f3613bee0267"
+            src="https://i.redd.it/buutovko6k1a1.gif"
             alt=""
             style={{ width: "100%", borderRadius: 6, display: "block" }}
           />
