@@ -16,8 +16,8 @@ async function req(path, options = {}) {
 }
 
 export const api = {
-  login: (email, password) => req("/auth/login", { method: "POST", body: JSON.stringify({ email, password }) }),
-  register: (name, email, password) => req("/auth/register", { method: "POST", body: JSON.stringify({ name, email, password }) }),
+  login: (username, password) => req("/auth/login", { method: "POST", body: JSON.stringify({ username, password }) }),
+  register: (username, display_name, password, signup_code) => req("/auth/register", { method: "POST", body: JSON.stringify({ username, display_name, password, signup_code }) }),
   me: () => req("/auth/me"),
 
   getStatuses: (projectId) => req(`/projects/${projectId}/statuses`),

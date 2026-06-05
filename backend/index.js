@@ -16,18 +16,17 @@ const pool = new Pool({
 
 const JWT_SECRET = process.env.JWT_SECRET || "change-this-secret";
 const ALLOWED_ORIGIN = process.env.ALLOWED_ORIGIN || "https://iridiumegg.github.io";
+const SIGNUP_CODE = process.env.SIGNUP_CODE || "es2bas2026";
 
 app.use(cors({ origin: [ALLOWED_ORIGIN, "http://localhost:5173"], credentials: true }));
 app.use(express.json());
 
-// Run migrations on startup
 async function migrate() {
   const sql = readFileSync(new URL("./migrate.sql", import.meta.url), "utf8");
   await pool.query(sql);
   console.log("Migrations applied");
 }
 
-// Auth middleware
 function auth(req, res, next) {
   const token = req.headers.authorization?.split(" ")[1];
   if (!token) return res.status(401).json({ error: "No token" });
@@ -39,35 +38,38 @@ function auth(req, res, next) {
   }
 }
 
-// ── Auth routes ──────────────────────────────────────────────────────────────
+// ── Auth ──────────────────────────────────────────────────────────────────────
 
 app.post("/auth/register", async (req, res) => {
-  const { name, email, password } = req.body;
-  if (!name || !email || !password) return res.status(400).json({ error: "Missing fields" });
+  const { username, display_name, password, signup_code } = req.body;
+  if (!username || !display_name || !password || !signup_code)
+    return res.status(400).json({ error: "Missing fields" });
+  if (signup_code !== SIGNUP_CODE)
+    return res.status(403).json({ error: "Invalid signup code" });
   try {
     const hash = await bcrypt.hash(password, 10);
     const { rows } = await pool.query(
-      "INSERT INTO users (name, email, password_hash) VALUES ($1, $2, $3) RETURNING id, name, email",
-      [name, email, hash]
+      "INSERT INTO users (username, display_name, password_hash) VALUES ($1, $2, $3) RETURNING id, username, display_name",
+      [username.toLowerCase(), display_name, hash]
     );
-    const token = jwt.sign({ id: rows[0].id, name: rows[0].name, email: rows[0].email }, JWT_SECRET, { expiresIn: "30d" });
-    res.json({ token, user: rows[0] });
+    const token = jwt.sign({ id: rows[0].id, name: rows[0].display_name, username: rows[0].username }, JWT_SECRET, { expiresIn: "30d" });
+    res.json({ token, user: { id: rows[0].id, name: rows[0].display_name, username: rows[0].username } });
   } catch (e) {
-    if (e.code === "23505") return res.status(409).json({ error: "Email already registered" });
+    if (e.code === "23505") return res.status(409).json({ error: "Username already taken" });
     res.status(500).json({ error: "Server error" });
   }
 });
 
 app.post("/auth/login", async (req, res) => {
-  const { email, password } = req.body;
-  if (!email || !password) return res.status(400).json({ error: "Missing fields" });
+  const { username, password } = req.body;
+  if (!username || !password) return res.status(400).json({ error: "Missing fields" });
   try {
-    const { rows } = await pool.query("SELECT * FROM users WHERE email = $1", [email]);
-    if (!rows[0]) return res.status(401).json({ error: "Invalid email or password" });
+    const { rows } = await pool.query("SELECT * FROM users WHERE username = $1", [username.toLowerCase()]);
+    if (!rows[0]) return res.status(401).json({ error: "Invalid username or password" });
     const ok = await bcrypt.compare(password, rows[0].password_hash);
-    if (!ok) return res.status(401).json({ error: "Invalid email or password" });
-    const token = jwt.sign({ id: rows[0].id, name: rows[0].name, email: rows[0].email }, JWT_SECRET, { expiresIn: "30d" });
-    res.json({ token, user: { id: rows[0].id, name: rows[0].name, email: rows[0].email } });
+    if (!ok) return res.status(401).json({ error: "Invalid username or password" });
+    const token = jwt.sign({ id: rows[0].id, name: rows[0].display_name, username: rows[0].username }, JWT_SECRET, { expiresIn: "30d" });
+    res.json({ token, user: { id: rows[0].id, name: rows[0].display_name, username: rows[0].username } });
   } catch {
     res.status(500).json({ error: "Server error" });
   }
@@ -75,7 +77,7 @@ app.post("/auth/login", async (req, res) => {
 
 app.get("/auth/me", auth, (req, res) => res.json({ user: req.user }));
 
-// ── Status routes ─────────────────────────────────────────────────────────────
+// ── Statuses ──────────────────────────────────────────────────────────────────
 
 app.get("/projects/:projectId/statuses", async (req, res) => {
   const { rows } = await pool.query(
@@ -100,7 +102,7 @@ app.put("/projects/:projectId/items/:itemId/status", auth, async (req, res) => {
   res.json(rows[0]);
 });
 
-// ── Notes routes ──────────────────────────────────────────────────────────────
+// ── Notes ─────────────────────────────────────────────────────────────────────
 
 app.get("/projects/:projectId/items/:itemId/notes", async (req, res) => {
   const { rows } = await pool.query(
@@ -120,7 +122,7 @@ app.post("/projects/:projectId/items/:itemId/notes", auth, async (req, res) => {
   res.json(rows[0]);
 });
 
-// ── Health check ──────────────────────────────────────────────────────────────
+// ── Health ────────────────────────────────────────────────────────────────────
 
 app.get("/health", (_, res) => res.json({ ok: true }));
 
