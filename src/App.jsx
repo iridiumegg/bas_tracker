@@ -5,7 +5,7 @@ import { PROJECTS } from "./projects/index.js";
 
 export default function App() {
   return (
-    <BrowserRouter>
+    <BrowserRouter basename="/bas_tracker">
       <Routes>
         <Route path="/" element={<Home />} />
         {PROJECTS.map(({ meta, items }) => (
