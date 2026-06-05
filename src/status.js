@@ -4,6 +4,6 @@
 // ──────────────────────────────────────────────────────────────────────────────
 
 export const CURRENT_STATUS = {
-  message: "Remote: reviewing logic based off TAB reports",
+  message: "Monitoring museum store temps",
   date: "2026-06-05",
 };
