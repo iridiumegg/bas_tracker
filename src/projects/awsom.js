@@ -6,6 +6,7 @@ export const meta = {
   source: "TAB Final Report 23 05 93",
   generated: "12/23/2025",
   label: "AWSOM · Alice Walton School of Medicine — Bentonville",
+  phase: "Commissioning",
   categories: ["All", "Programming", "VFD / Setpoint", "Setpoint Verify", "Setpoint Update", "Airflow Review", "Sensor Verify", "FYI / Verify", "FYI / Document"],
 };
 

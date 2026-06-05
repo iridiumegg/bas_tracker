@@ -2,20 +2,17 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { PRIORITY_CONFIG, STATUS_CONFIG, CATEGORIES, PRIORITIES, STATUSES } from "./config.js";
 import StatusBar from "./StatusBar.jsx";
+import { useProjectItems } from "./useProjectItems.js";
 
 export default function ProjectPage({ meta, items: initialItems }) {
   const categories = meta.categories || CATEGORIES;
-  const [items, setItems] = useState(initialItems);
+  const { items, setStatus } = useProjectItems(meta.id, initialItems);
   const [filterCat, setFilterCat] = useState("All");
   const [filterPri, setFilterPri] = useState("All");
   const [filterStat, setFilterStat] = useState("All");
   const [expandedId, setExpandedId] = useState(null);
   const [notes, setNotes] = useState({});
   const [editingNote, setEditingNote] = useState(null);
-
-  const setStatus = (id, status) => {
-    setItems(prev => prev.map(i => i.id === id ? { ...i, status } : i));
-  };
 
   const filtered = items.filter(i => {
     if (filterCat !== "All" && i.category !== filterCat) return false;
