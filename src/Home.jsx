@@ -1,14 +1,25 @@
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { PROJECTS } from "./projects/index.js";
 import StatusBar from "./StatusBar.jsx";
-
-const SK = (pid, id) => `bas_s_${pid}_${id}`;
+import { useAuth } from "./AuthContext.jsx";
+import { api } from "./api.js";
 
 function ProjectCard({ meta, items }) {
-  const resolved = items.filter(i => (localStorage.getItem(SK(meta.id, i.id)) || i.status) === "RESOLVED").length;
-  const inProgress = items.filter(i => (localStorage.getItem(SK(meta.id, i.id)) || i.status) === "IN_PROGRESS").length;
-  const open = items.filter(i => (localStorage.getItem(SK(meta.id, i.id)) || i.status) === "OPEN").length;
-  const s = { open, inProgress, resolved, total: items.length };
+  const [statuses, setStatuses] = useState({});
+
+  useEffect(() => {
+    api.getStatuses(meta.id).then(rows => {
+      const m = {};
+      for (const r of rows) m[r.item_id] = r.status;
+      setStatuses(m);
+    }).catch(() => {});
+  }, [meta.id]);
+
+  const resolvedCount = items.filter(i => (statuses[i.id] || i.status) === "RESOLVED").length;
+  const inProgressCount = items.filter(i => (statuses[i.id] || i.status) === "IN_PROGRESS").length;
+  const openCount = items.filter(i => (statuses[i.id] || i.status) === "OPEN").length;
+  const s = { open: openCount, inProgress: inProgressCount, resolved: resolvedCount, total: items.length };
   const pct = s.total ? Math.round((s.resolved / s.total) * 100) : 0;
 
   return (
@@ -65,6 +76,7 @@ function ProjectCard({ meta, items }) {
 }
 
 export default function Home() {
+  const { user, logout } = useAuth();
   // Group projects by phase
   const phases = {};
   for (const project of PROJECTS) {
@@ -89,6 +101,7 @@ export default function Home() {
       <div style={{ background: "#0d1017", borderBottom: "1px solid #1e2330", padding: "20px 28px 16px" }} className="home-padding">
         <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", flexWrap: "wrap", gap: 12 }}>
           <div>
+
             <div style={{ fontSize: 10, color: "#4a5570", letterSpacing: "0.12em", marginBottom: 4, textTransform: "uppercase" }}>
               Nathan Stewart · ES2 · Building Automation Systems
             </div>
@@ -99,7 +112,15 @@ export default function Home() {
               {PROJECTS.length} active project{PROJECTS.length !== 1 ? "s" : ""}
             </div>
           </div>
-          <div className="home-statusbar"><StatusBar /></div>
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 8 }}>
+            <div className="home-statusbar"><StatusBar /></div>
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <span style={{ fontSize: 11, color: "#4a5570" }}>{user?.name}</span>
+              <button onClick={logout} style={{ fontSize: 10, color: "#3a4255", background: "transparent", border: "1px solid #1e2330", borderRadius: 3, padding: "3px 8px", cursor: "pointer", fontFamily: "'IBM Plex Mono', monospace" }}>
+                Sign out
+              </button>
+            </div>
+          </div>
         </div>
       </div>
 

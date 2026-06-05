@@ -1,25 +1,75 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { PRIORITY_CONFIG, STATUS_CONFIG, CATEGORIES, PRIORITIES, STATUSES } from "./config.js";
 import StatusBar from "./StatusBar.jsx";
+import { useAuth } from "./AuthContext.jsx";
+import { api } from "./api.js";
 
-const SK = (pid, id) => `bas_s_${pid}_${id}`;
+function fmt(ts) {
+  if (!ts) return "";
+  const d = new Date(ts);
+  return `${d.getMonth() + 1}/${d.getDate()} ${d.getHours()}:${String(d.getMinutes()).padStart(2, "0")}`;
+}
 
 export default function ProjectPage({ meta, items: initialItems }) {
+  const { user, logout } = useAuth();
   const categories = meta.categories || CATEGORIES;
-  const [items, setItems] = useState(() =>
-    initialItems.map(i => ({ ...i, status: localStorage.getItem(SK(meta.id, i.id)) || i.status }))
-  );
+
+  const [items, setItems] = useState(initialItems);
   const [filterCat, setFilterCat] = useState("All");
   const [filterPri, setFilterPri] = useState("All");
   const [filterStat, setFilterStat] = useState("All");
   const [expandedId, setExpandedId] = useState(null);
-  const [notes, setNotes] = useState({});
-  const [editingNote, setEditingNote] = useState(null);
+  const [statusMeta, setStatusMeta] = useState({});  // { [itemId]: { changed_by_name, changed_at } }
+  const [notes, setNotes] = useState({});             // { [itemId]: [{content, created_by_name, created_at}] }
+  const [newNote, setNewNote] = useState({});
+  const [savingNote, setSavingNote] = useState(null);
 
-  const setStatus = (id, status) => {
-    localStorage.setItem(SK(meta.id, id), status);
+  // Load persisted statuses from API on mount
+  useEffect(() => {
+    api.getStatuses(meta.id).then(rows => {
+      const meta_ = {};
+      const updates = {};
+      for (const row of rows) {
+        updates[row.item_id] = row.status;
+        meta_[row.item_id] = { changed_by_name: row.changed_by_name, changed_at: row.changed_at };
+      }
+      setItems(prev => prev.map(i => updates[i.id] ? { ...i, status: updates[i.id] } : i));
+      setStatusMeta(meta_);
+    }).catch(() => {});
+  }, [meta.id]);
+
+  // Load notes when an item is expanded
+  useEffect(() => {
+    if (!expandedId) return;
+    api.getNotes(meta.id, expandedId).then(rows => {
+      setNotes(prev => ({ ...prev, [expandedId]: rows }));
+    }).catch(() => {});
+  }, [expandedId, meta.id]);
+
+  const setStatus = async (id, status) => {
     setItems(prev => prev.map(i => i.id === id ? { ...i, status } : i));
+    try {
+      const row = await api.setStatus(meta.id, id, status);
+      setStatusMeta(prev => ({ ...prev, [id]: { changed_by_name: row.changed_by_name, changed_at: row.changed_at } }));
+    } catch (e) {
+      console.error("Status save failed", e);
+    }
+  };
+
+  const submitNote = async (itemId) => {
+    const content = newNote[itemId]?.trim();
+    if (!content) return;
+    setSavingNote(itemId);
+    try {
+      const row = await api.addNote(meta.id, itemId, content);
+      setNotes(prev => ({ ...prev, [itemId]: [...(prev[itemId] || []), row] }));
+      setNewNote(prev => ({ ...prev, [itemId]: "" }));
+    } catch (e) {
+      console.error("Note save failed", e);
+    } finally {
+      setSavingNote(null);
+    }
   };
 
   const filtered = items.filter(i => {
@@ -53,7 +103,6 @@ export default function ProjectPage({ meta, items: initialItems }) {
         textarea:focus { border-color: #3a5080; }
         .back-link { color: #4a5570; font-size: 11px; text-decoration: none; letter-spacing: 0.08em; }
         .back-link:hover { color: #8ab4f8; }
-        .filter-scroll { display: flex; flex-wrap: wrap; gap: 18px; align-items: center; }
         .col-headers { display: grid; grid-template-columns: 52px 70px 130px 140px 1fr; gap: 12px; }
         .item-grid  { display: grid; grid-template-columns: 52px 70px 130px 140px 1fr; gap: 12px; align-items: start; }
         .expand-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 14px; }
@@ -63,40 +112,34 @@ export default function ProjectPage({ meta, items: initialItems }) {
           .item-grid  { grid-template-columns: 64px 1fr; }
           .item-grid .hide-mobile { display: none; }
           .expand-grid { grid-template-columns: 1fr; }
-          .filter-scroll { gap: 10px; overflow-x: auto; flex-wrap: nowrap; padding-bottom: 4px; }
+          .filter-scroll { overflow-x: auto; flex-wrap: nowrap !important; padding-bottom: 4px; }
           .status-row { flex-direction: column; align-items: flex-start; gap: 8px; }
-          .status-row .status-buttons { flex-wrap: wrap; }
-          .header-right { display: none; }
+          .header-right { display: none !important; }
           .counts-mobile { display: flex !important; }
         }
-        @media (min-width: 641px) {
-          .counts-mobile { display: none !important; }
-        }
+        @media (min-width: 641px) { .counts-mobile { display: none !important; } }
       `}</style>
 
       {/* Header */}
       <div style={{ background: "#0d1017", borderBottom: "1px solid #1e2330", padding: "16px 16px 14px" }}>
-        <div style={{ marginBottom: 10 }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
           <Link to="/" className="back-link">← All Projects</Link>
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <span style={{ fontSize: 11, color: "#4a5570" }}>{user?.name}</span>
+            <button onClick={logout} style={{ fontSize: 10, color: "#3a4255", background: "transparent", border: "1px solid #1e2330", borderRadius: 3, padding: "3px 8px", cursor: "pointer", fontFamily: "'IBM Plex Mono', monospace" }}>
+              Sign out
+            </button>
+          </div>
         </div>
         <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", flexWrap: "wrap", gap: 10 }}>
           <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ fontSize: 10, color: "#4a5570", letterSpacing: "0.1em", marginBottom: 4, textTransform: "uppercase" }}>
-              {meta.label}
-            </div>
+            <div style={{ fontSize: 10, color: "#4a5570", letterSpacing: "0.1em", marginBottom: 4, textTransform: "uppercase" }}>{meta.label}</div>
             <div style={{ fontSize: 20, fontWeight: 600, color: "#e0e4ef", fontFamily: "'IBM Plex Sans', sans-serif", letterSpacing: "-0.02em" }}>
               TAB Report — BAS Action Items
             </div>
-            <div style={{ fontSize: 11, color: "#4a5570", marginTop: 3 }}>
-              {meta.source} &nbsp;·&nbsp; {meta.generated}
-            </div>
-            {/* Mobile counts */}
+            <div style={{ fontSize: 11, color: "#4a5570", marginTop: 3 }}>{meta.source} &nbsp;·&nbsp; {meta.generated}</div>
             <div className="counts-mobile" style={{ gap: 14, marginTop: 10 }}>
-              {[
-                { label: "OPEN", val: counts.open, color: "#e74c3c" },
-                { label: "IN PROG", val: counts.inProgress, color: "#f1c40f" },
-                { label: "RESOLVED", val: counts.resolved, color: "#2ecc71" },
-              ].map(s => (
+              {[{ label: "OPEN", val: counts.open, color: "#e74c3c" }, { label: "IN PROG", val: counts.inProgress, color: "#f1c40f" }, { label: "RESOLVED", val: counts.resolved, color: "#2ecc71" }].map(s => (
                 <div key={s.label} style={{ textAlign: "center" }}>
                   <div style={{ fontSize: 20, fontWeight: 600, color: s.color, lineHeight: 1 }}>{s.val}</div>
                   <div style={{ fontSize: 8, color: "#4a5570", letterSpacing: "0.1em", marginTop: 2 }}>{s.label}</div>
@@ -107,11 +150,7 @@ export default function ProjectPage({ meta, items: initialItems }) {
           <div className="header-right" style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 10 }}>
             <StatusBar />
             <div style={{ display: "flex", gap: 16 }}>
-              {[
-                { label: "OPEN", val: counts.open, color: "#e74c3c" },
-                { label: "IN PROGRESS", val: counts.inProgress, color: "#f1c40f" },
-                { label: "RESOLVED", val: counts.resolved, color: "#2ecc71" },
-              ].map(s => (
+              {[{ label: "OPEN", val: counts.open, color: "#e74c3c" }, { label: "IN PROGRESS", val: counts.inProgress, color: "#f1c40f" }, { label: "RESOLVED", val: counts.resolved, color: "#2ecc71" }].map(s => (
                 <div key={s.label} style={{ textAlign: "center" }}>
                   <div style={{ fontSize: 26, fontWeight: 600, color: s.color, lineHeight: 1 }}>{s.val}</div>
                   <div style={{ fontSize: 9, color: "#4a5570", letterSpacing: "0.1em", marginTop: 2 }}>{s.label}</div>
@@ -124,7 +163,7 @@ export default function ProjectPage({ meta, items: initialItems }) {
 
       {/* Filters */}
       <div style={{ padding: "10px 16px", borderBottom: "1px solid #161b26" }}>
-        <div className="filter-scroll">
+        <div className="filter-scroll" style={{ display: "flex", flexWrap: "wrap", gap: 14, alignItems: "center" }}>
           {[
             { label: "Cat", opts: categories, val: filterCat, set: setFilterCat },
             { label: "Pri", opts: PRIORITIES, val: filterPri, set: setFilterPri },
@@ -132,29 +171,23 @@ export default function ProjectPage({ meta, items: initialItems }) {
           ].map(f => (
             <div key={f.label} style={{ display: "flex", alignItems: "center", gap: 5, flexShrink: 0 }}>
               <span style={{ fontSize: 10, color: "#4a5570", letterSpacing: "0.08em", textTransform: "uppercase" }}>{f.label}:</span>
-              <div style={{ display: "flex", gap: 3, flexWrap: "nowrap" }}>
+              <div style={{ display: "flex", gap: 3 }}>
                 {f.opts.map(o => (
-                  <button key={o} className="filter-btn"
-                    onClick={() => f.set(o)}
-                    style={{
-                      background: f.val === o ? "#1e2a40" : "transparent",
-                      color: f.val === o ? "#8ab4f8" : "#4a5570",
-                      border: `1px solid ${f.val === o ? "#2d4470" : "#1e2330"}`,
-                      whiteSpace: "nowrap",
-                    }}>
-                    {o}
-                  </button>
+                  <button key={o} className="filter-btn" onClick={() => f.set(o)} style={{
+                    background: f.val === o ? "#1e2a40" : "transparent",
+                    color: f.val === o ? "#8ab4f8" : "#4a5570",
+                    border: `1px solid ${f.val === o ? "#2d4470" : "#1e2330"}`,
+                    whiteSpace: "nowrap",
+                  }}>{o}</button>
                 ))}
               </div>
             </div>
           ))}
-          <span style={{ marginLeft: "auto", fontSize: 11, color: "#4a5570", flexShrink: 0 }}>
-            {filtered.length}/{items.length}
-          </span>
+          <span style={{ marginLeft: "auto", fontSize: 11, color: "#4a5570", flexShrink: 0 }}>{filtered.length}/{items.length}</span>
         </div>
       </div>
 
-      {/* Column Headers — hidden on mobile via CSS */}
+      {/* Column Headers */}
       <div className="col-headers" style={{ padding: "8px 16px", borderBottom: "1px solid #161b26", fontSize: 9, color: "#3a4255", letterSpacing: "0.12em", textTransform: "uppercase" }}>
         <div>#</div><div>Priority</div><div>Unit</div><div>Category</div><div>Issue / Action</div>
       </div>
@@ -165,60 +198,32 @@ export default function ProjectPage({ meta, items: initialItems }) {
           const pc = PRIORITY_CONFIG[item.priority];
           const sc = STATUS_CONFIG[item.status];
           const isExpanded = expandedId === item.id;
+          const sm = statusMeta[item.id];
+          const itemNotes = notes[item.id] || [];
 
           return (
             <div key={item.id}>
-              <div
-                className="item-row item-grid"
+              <div className="item-row item-grid"
                 onClick={() => setExpandedId(isExpanded ? null : item.id)}
                 style={{
-                  padding: "11px 16px",
-                  borderBottom: "1px solid #111520",
+                  padding: "11px 16px", borderBottom: "1px solid #111520",
                   background: isExpanded ? "#0f1420" : idx % 2 === 0 ? "#0b0d11" : "#0d0f14",
-                }}
-              >
-                {/* # — hidden on mobile, priority shown instead */}
-                <div className="hide-mobile" style={{ fontSize: 11, color: "#2a3045", paddingTop: 2 }}>
-                  {String(item.id).padStart(2, "0")}
-                </div>
-                {/* On mobile this cell shows priority badge */}
+                }}>
+                <div className="hide-mobile" style={{ fontSize: 11, color: "#2a3045", paddingTop: 2 }}>{String(item.id).padStart(2, "0")}</div>
                 <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-                  <span style={{
-                    fontSize: 9, fontWeight: 600, letterSpacing: "0.1em",
-                    color: pc.text, background: pc.bg, border: `1px solid ${pc.border}`,
-                    padding: "2px 5px", borderRadius: 2, display: "inline-block",
-                  }}>{pc.label}</span>
-                  {/* Status badge — shown on mobile only */}
-                  <span style={{
-                    fontSize: 8, fontWeight: 600, letterSpacing: "0.08em",
-                    color: sc.text, background: sc.bg, border: `1px solid ${sc.border}`,
-                    padding: "2px 5px", borderRadius: 2, display: "inline-block",
-                  }}>{sc.label}</span>
+                  <span style={{ fontSize: 9, fontWeight: 600, letterSpacing: "0.1em", color: pc.text, background: pc.bg, border: `1px solid ${pc.border}`, padding: "2px 5px", borderRadius: 2, display: "inline-block" }}>{pc.label}</span>
+                  <span style={{ fontSize: 8, fontWeight: 600, letterSpacing: "0.08em", color: sc.text, background: sc.bg, border: `1px solid ${sc.border}`, padding: "2px 5px", borderRadius: 2, display: "inline-block" }}>{sc.label}</span>
                 </div>
-
                 <div className="hide-mobile" style={{ fontSize: 12, color: "#8ab4f8", fontWeight: 500, paddingTop: 1 }}>{item.unit}</div>
                 <div className="hide-mobile" style={{ fontSize: 11, color: "#5a6580", paddingTop: 2 }}>{item.category}</div>
-
-                {/* Issue — on mobile this is the main content column */}
                 <div>
-                  {/* Mobile: show unit above issue */}
-                  <div style={{ fontSize: 11, color: "#8ab4f8", fontWeight: 500, marginBottom: 3, display: "none" }} className="show-mobile-unit">
-                    {item.unit}
-                  </div>
                   <div style={{ fontSize: 12, color: "#a0a8bc", lineHeight: 1.5 }}>{item.issue}</div>
-                  <div style={{ fontSize: 11, color: "#4a5570", marginTop: 3 }}>
-                    ↳ {item.action.substring(0, 80)}{item.action.length > 80 ? "…" : ""}
-                  </div>
+                  <div style={{ fontSize: 11, color: "#4a5570", marginTop: 3 }}>↳ {item.action.substring(0, 80)}{item.action.length > 80 ? "…" : ""}</div>
                 </div>
               </div>
 
               {isExpanded && (
-                <div style={{
-                  background: "#0d1017",
-                  borderBottom: "1px solid #1e2535",
-                  padding: "14px 16px",
-                  borderLeft: `3px solid ${pc.border}`,
-                }}>
+                <div style={{ background: "#0d1017", borderBottom: "1px solid #1e2535", padding: "14px 16px", borderLeft: `3px solid ${pc.border}` }}>
                   <div className="expand-grid">
                     <div>
                       <div style={{ fontSize: 9, color: "#3a4255", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: 5 }}>Full Issue</div>
@@ -234,48 +239,47 @@ export default function ProjectPage({ meta, items: initialItems }) {
                     <div style={{ fontSize: 10, color: "#3a4255" }}>
                       Source: <span style={{ color: "#5a6580" }}>{item.source}</span>
                     </div>
-                    <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }} className="status-buttons">
+                    <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
                       <span style={{ fontSize: 10, color: "#3a4255", letterSpacing: "0.08em" }}>STATUS:</span>
                       {Object.entries(STATUS_CONFIG).map(([key, cfg]) => (
                         <button key={key} className="status-btn"
                           onClick={e => { e.stopPropagation(); setStatus(item.id, key); }}
-                          style={{
-                            background: item.status === key ? cfg.bg : "transparent",
-                            color: item.status === key ? cfg.text : "#3a4255",
-                            border: `1px solid ${item.status === key ? cfg.border : "#1e2330"}`,
-                          }}>
+                          style={{ background: item.status === key ? cfg.bg : "transparent", color: item.status === key ? cfg.text : "#3a4255", border: `1px solid ${item.status === key ? cfg.border : "#1e2330"}` }}>
                           {cfg.label}
                         </button>
                       ))}
                     </div>
-                  </div>
-
-                  <div style={{ marginTop: 12 }}>
-                    <div style={{ fontSize: 9, color: "#3a4255", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: 5 }}>Field Notes</div>
-                    {editingNote === item.id ? (
-                      <div onClick={e => e.stopPropagation()}>
-                        <textarea
-                          rows={3}
-                          value={notes[item.id] || ""}
-                          onChange={e => setNotes(prev => ({ ...prev, [item.id]: e.target.value }))}
-                          placeholder="Add notes, findings, assigned tech..."
-                        />
-                        <button className="filter-btn" onClick={e => { e.stopPropagation(); setEditingNote(null); }}
-                          style={{ marginTop: 6, background: "#1e2a40", color: "#8ab4f8", border: "1px solid #2d4470" }}>
-                          Save
-                        </button>
-                      </div>
-                    ) : (
-                      <div
-                        onClick={e => { e.stopPropagation(); setEditingNote(item.id); }}
-                        style={{
-                          fontSize: 12, color: notes[item.id] ? "#8a9ab8" : "#2a3045",
-                          background: "#090c12", border: "1px solid #161b26",
-                          borderRadius: 3, padding: "8px 10px", cursor: "text", minHeight: 36, lineHeight: 1.6,
-                        }}>
-                        {notes[item.id] || "Click to add notes…"}
+                    {sm && (
+                      <div style={{ fontSize: 10, color: "#3a4255", marginLeft: "auto" }}>
+                        by <span style={{ color: "#5a6580" }}>{sm.changed_by_name}</span> · {fmt(sm.changed_at)}
                       </div>
                     )}
+                  </div>
+
+                  {/* Notes */}
+                  <div style={{ marginTop: 14 }}>
+                    <div style={{ fontSize: 9, color: "#3a4255", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: 8 }}>Field Notes</div>
+                    {itemNotes.length > 0 && (
+                      <div style={{ marginBottom: 10, display: "flex", flexDirection: "column", gap: 6 }}>
+                        {itemNotes.map(n => (
+                          <div key={n.id} style={{ background: "#090c12", border: "1px solid #161b26", borderRadius: 3, padding: "8px 10px" }}>
+                            <div style={{ fontSize: 12, color: "#8a9ab8", lineHeight: 1.6 }}>{n.content}</div>
+                            <div style={{ fontSize: 10, color: "#2a3045", marginTop: 4 }}>
+                              {n.created_by_name} · {fmt(n.created_at)}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                    <div onClick={e => e.stopPropagation()}>
+                      <textarea rows={2} value={newNote[item.id] || ""} placeholder="Add a note…"
+                        onChange={e => setNewNote(prev => ({ ...prev, [item.id]: e.target.value }))} />
+                      <button className="filter-btn" disabled={savingNote === item.id}
+                        onClick={e => { e.stopPropagation(); submitNote(item.id); }}
+                        style={{ marginTop: 6, background: "#1e2a40", color: "#8ab4f8", border: "1px solid #2d4470" }}>
+                        {savingNote === item.id ? "Saving…" : "Save Note"}
+                      </button>
+                    </div>
                   </div>
                 </div>
               )}
@@ -285,9 +289,7 @@ export default function ProjectPage({ meta, items: initialItems }) {
       </div>
 
       {filtered.length === 0 && (
-        <div style={{ padding: "48px", textAlign: "center", color: "#2a3045", fontSize: 13 }}>
-          No items match the current filters.
-        </div>
+        <div style={{ padding: "48px", textAlign: "center", color: "#2a3045", fontSize: 13 }}>No items match the current filters.</div>
       )}
 
       <div style={{ padding: "20px 16px", borderTop: "1px solid #111520", fontSize: 10, color: "#2a3045" }}>
