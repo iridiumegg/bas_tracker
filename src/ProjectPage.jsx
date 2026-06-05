@@ -3,14 +3,18 @@ import { Link } from "react-router-dom";
 import { PRIORITY_CONFIG, STATUS_CONFIG, CATEGORIES, PRIORITIES, STATUSES } from "./config.js";
 import StatusBar from "./StatusBar.jsx";
 
-export default function ProjectPage({ meta, items }) {
+export default function ProjectPage({ meta, items: initialItems }) {
   const categories = meta.categories || CATEGORIES;
+  const [items, setItems] = useState(initialItems);
   const [filterCat, setFilterCat] = useState("All");
   const [filterPri, setFilterPri] = useState("All");
   const [filterStat, setFilterStat] = useState("All");
   const [expandedId, setExpandedId] = useState(null);
   const [notes, setNotes] = useState({});
   const [editingNote, setEditingNote] = useState(null);
+
+  const setStatus = (id, status) =>
+    setItems(prev => prev.map(i => i.id === id ? { ...i, status } : i));
 
   const filtered = items.filter(i => {
     if (filterCat !== "All" && i.category !== filterCat) return false;
@@ -228,12 +232,11 @@ export default function ProjectPage({ meta, items }) {
                       <span style={{ fontSize: 10, color: "#3a4255", letterSpacing: "0.08em" }}>STATUS:</span>
                       {Object.entries(STATUS_CONFIG).map(([key, cfg]) => (
                         <button key={key} className="status-btn"
-                          onClick={e => { e.stopPropagation(); }}
+                          onClick={e => { e.stopPropagation(); setStatus(item.id, key); }}
                           style={{
                             background: item.status === key ? cfg.bg : "transparent",
                             color: item.status === key ? cfg.text : "#3a4255",
                             border: `1px solid ${item.status === key ? cfg.border : "#1e2330"}`,
-                            opacity: 0.6, cursor: "default",
                           }}>
                           {cfg.label}
                         </button>
