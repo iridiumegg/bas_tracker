@@ -4,6 +4,6 @@
 // ──────────────────────────────────────────────────────────────────────────────
 
 export const CURRENT_STATUS = {
-  message: "On-site at Crystal Bridges — reviewing TAB report action items",
+  message: "Remote — reviewing TAB report action items",
   date: "2026-06-05",
 };
