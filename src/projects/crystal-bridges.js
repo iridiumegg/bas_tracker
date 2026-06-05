@@ -1,6 +1,6 @@
 export const meta = {
   id: "crystal-bridges",
-  name: "Crystal Bridges Museum",
+  name: "CBMAA PH 2",
   subtitle: "BAS Retrofit",
   client: "ES2",
   source: "TAB Report Book 6-5-26",
