@@ -6,6 +6,7 @@ export const meta = {
   source: "TAB Report Book 6-5-26",
   generated: "6/5/2026",
   label: "ES2 · Crystal Bridges Museum BAS Retrofit",
+  categories: ["All", "Programming", "Sensor Cal", "EBTRON Verify", "Airflow Review", "Setpoint Update", "FYI / No Action"],
 };
 
 export const items = [

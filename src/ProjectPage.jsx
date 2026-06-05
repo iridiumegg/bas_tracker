@@ -4,6 +4,7 @@ import { PRIORITY_CONFIG, STATUS_CONFIG, CATEGORIES, PRIORITIES, STATUSES } from
 import StatusBar from "./StatusBar.jsx";
 
 export default function ProjectPage({ meta, items: initialItems }) {
+  const categories = meta.categories || CATEGORIES;
   const [items, setItems] = useState(initialItems);
   const [filterCat, setFilterCat] = useState("All");
   const [filterPri, setFilterPri] = useState("All");
@@ -87,7 +88,7 @@ export default function ProjectPage({ meta, items: initialItems }) {
       {/* Filters */}
       <div style={{ padding: "12px 28px", borderBottom: "1px solid #161b26", display: "flex", flexWrap: "wrap", gap: 18, alignItems: "center" }}>
         {[
-          { label: "Category", opts: CATEGORIES, val: filterCat, set: setFilterCat },
+          { label: "Category", opts: categories, val: filterCat, set: setFilterCat },
           { label: "Priority", opts: PRIORITIES, val: filterPri, set: setFilterPri },
           { label: "Status",   opts: STATUSES,   val: filterStat, set: setFilterStat },
         ].map(f => (
