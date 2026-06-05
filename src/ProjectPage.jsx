@@ -3,9 +3,13 @@ import { Link } from "react-router-dom";
 import { PRIORITY_CONFIG, STATUS_CONFIG, CATEGORIES, PRIORITIES, STATUSES } from "./config.js";
 import StatusBar from "./StatusBar.jsx";
 
+const SK = (pid, id) => `bas_s_${pid}_${id}`;
+
 export default function ProjectPage({ meta, items: initialItems }) {
   const categories = meta.categories || CATEGORIES;
-  const [items, setItems] = useState(initialItems);
+  const [items, setItems] = useState(() =>
+    initialItems.map(i => ({ ...i, status: localStorage.getItem(SK(meta.id, i.id)) || i.status }))
+  );
   const [filterCat, setFilterCat] = useState("All");
   const [filterPri, setFilterPri] = useState("All");
   const [filterStat, setFilterStat] = useState("All");
@@ -13,8 +17,10 @@ export default function ProjectPage({ meta, items: initialItems }) {
   const [notes, setNotes] = useState({});
   const [editingNote, setEditingNote] = useState(null);
 
-  const setStatus = (id, status) =>
+  const setStatus = (id, status) => {
+    localStorage.setItem(SK(meta.id, id), status);
     setItems(prev => prev.map(i => i.id === id ? { ...i, status } : i));
+  };
 
   const filtered = items.filter(i => {
     if (filterCat !== "All" && i.category !== filterCat) return false;

@@ -2,13 +2,13 @@ import { Link } from "react-router-dom";
 import { PROJECTS } from "./projects/index.js";
 import StatusBar from "./StatusBar.jsx";
 
+const SK = (pid, id) => `bas_s_${pid}_${id}`;
+
 function ProjectCard({ meta, items }) {
-  const s = {
-    open: items.filter(i => i.status === "OPEN").length,
-    inProgress: items.filter(i => i.status === "IN_PROGRESS").length,
-    resolved: items.filter(i => i.status === "RESOLVED").length,
-    total: items.length,
-  };
+  const resolved = items.filter(i => (localStorage.getItem(SK(meta.id, i.id)) || i.status) === "RESOLVED").length;
+  const inProgress = items.filter(i => (localStorage.getItem(SK(meta.id, i.id)) || i.status) === "IN_PROGRESS").length;
+  const open = items.filter(i => (localStorage.getItem(SK(meta.id, i.id)) || i.status) === "OPEN").length;
+  const s = { open, inProgress, resolved, total: items.length };
   const pct = s.total ? Math.round((s.resolved / s.total) * 100) : 0;
 
   return (
