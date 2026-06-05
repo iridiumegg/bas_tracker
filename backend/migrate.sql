@@ -6,6 +6,14 @@ CREATE TABLE IF NOT EXISTS users (
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
+-- Add missing columns if upgrading from old schema
+ALTER TABLE users ADD COLUMN IF NOT EXISTS username TEXT;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS display_name TEXT;
+ALTER TABLE users DROP COLUMN IF EXISTS email;
+ALTER TABLE users DROP COLUMN IF EXISTS name;
+ALTER TABLE users ALTER COLUMN username SET NOT NULL;
+ALTER TABLE users ALTER COLUMN display_name SET NOT NULL;
+
 CREATE TABLE IF NOT EXISTS item_statuses (
   id SERIAL PRIMARY KEY,
   project_id TEXT NOT NULL,
