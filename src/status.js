@@ -4,6 +4,6 @@
 // ──────────────────────────────────────────────────────────────────────────────
 
 export const CURRENT_STATUS = {
-  message: "Monitoring museum store temps",
+  message: "Offline",
   date: "2026-06-05",
 };
