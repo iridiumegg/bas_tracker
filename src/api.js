@@ -10,7 +10,13 @@ async function req(path, options = {}) {
       ...options.headers,
     },
   });
-  const data = await res.json();
+  const text = await res.text();
+  let data;
+  try {
+    data = JSON.parse(text);
+  } catch {
+    throw new Error(`The server returned an unexpected response (HTTP ${res.status}). The backend may be down, still deploying, or running an old version.`);
+  }
   if (!res.ok) throw new Error(data.error || "Request failed");
   return data;
 }

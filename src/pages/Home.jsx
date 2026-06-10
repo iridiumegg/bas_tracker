@@ -95,10 +95,13 @@ function ProjectCard({ p }) {
 
 export default function Home() {
   const [projects, setProjects] = useState(null);
+  const [loadError, setLoadError] = useState("");
   const [showNew, setShowNew] = useState(false);
 
   const load = useCallback(() => {
-    api.getProjects().then(setProjects).catch(() => setProjects([]));
+    api.getProjects()
+      .then(p => { setProjects(p); setLoadError(""); })
+      .catch(e => { setProjects([]); setLoadError(e.message); });
   }, []);
 
   useEffect(load, [load]);
@@ -133,7 +136,13 @@ export default function Home() {
         </div>
       ))}
 
-      {projects.length === 0 && (
+      {loadError ? (
+        <div className="bg-[#1a0a0a] border border-[#7b241c] rounded-md p-6 text-center">
+          <div className="text-[13px] text-bad mb-2">Couldn't load projects</div>
+          <div className="text-[11px] text-mut mb-4">{loadError}</div>
+          <Button variant="ghost" onClick={load}>Retry</Button>
+        </div>
+      ) : projects.length === 0 && (
         <div className="py-16 text-center text-[13px] text-ghost">
           No projects yet. Create your first one.
         </div>
