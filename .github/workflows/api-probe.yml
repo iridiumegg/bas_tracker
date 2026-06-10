@@ -1,0 +1,20 @@
+name: API Probe (debug)
+
+on:
+  workflow_dispatch:
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Probe backend endpoints
+        run: |
+          B=https://bastracker-production.up.railway.app
+          echo "== /health =="
+          curl -sS -m 15 -i "$B/health" | head -20 || true
+          echo
+          echo "== /auth/needs-setup (new backend only) =="
+          curl -sS -m 15 "$B/auth/needs-setup" | head -5 || true
+          echo
+          echo "== /projects without token (new: 401 JSON, old: HTML 404) =="
+          curl -sS -m 15 -i "$B/projects" -H "Origin: https://iridiumegg.github.io" | head -30 || true
