@@ -1,37 +1,46 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { HashRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "./AuthContext.jsx";
-import Home from "./Home.jsx";
-import ProjectPage from "./ProjectPage.jsx";
-import LoginPage from "./LoginPage.jsx";
-import { PROJECTS } from "./projects/index.js";
+import Shell from "./components/Shell.jsx";
+import Home from "./pages/Home.jsx";
+import ProjectPage from "./pages/ProjectPage.jsx";
+import SummaryPage from "./pages/SummaryPage.jsx";
+import ActivityPage from "./pages/ActivityPage.jsx";
+import SettingsPage from "./pages/SettingsPage.jsx";
+import AdminPage from "./pages/AdminPage.jsx";
+import LoginPage from "./pages/LoginPage.jsx";
 
 function AppRoutes() {
   const { user, loading } = useAuth();
 
   if (loading) return (
-    <div style={{ minHeight: "100vh", background: "#0b0d11", display: "flex", alignItems: "center", justifyContent: "center" }}>
-      <div style={{ fontSize: 11, color: "#3a4255", fontFamily: "'IBM Plex Mono', monospace", letterSpacing: "0.1em" }}>LOADING…</div>
+    <div className="min-h-screen bg-ink flex items-center justify-center">
+      <div className="text-[11px] text-dim font-mono tracking-[0.1em]">LOADING…</div>
     </div>
   );
 
   if (!user) return <LoginPage />;
 
   return (
-    <Routes>
-      <Route path="/" element={<Home />} />
-      {PROJECTS.map(({ meta, items }) => (
-        <Route key={meta.id} path={`/${meta.id}`} element={<ProjectPage meta={meta} items={items} />} />
-      ))}
-    </Routes>
+    <Shell>
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/p/:slug" element={<ProjectPage />} />
+        <Route path="/summary" element={<SummaryPage />} />
+        <Route path="/activity" element={<ActivityPage />} />
+        <Route path="/settings" element={<SettingsPage />} />
+        {user.role === "admin" && <Route path="/admin" element={<AdminPage />} />}
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </Shell>
   );
 }
 
 export default function App() {
   return (
     <AuthProvider>
-      <BrowserRouter basename="/bas_tracker">
+      <HashRouter>
         <AppRoutes />
-      </BrowserRouter>
+      </HashRouter>
     </AuthProvider>
   );
 }

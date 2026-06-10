@@ -1,0 +1,50 @@
+@import "tailwindcss";
+
+@theme {
+  --font-mono: "IBM Plex Mono", monospace;
+  --font-sans: "IBM Plex Sans", sans-serif;
+
+  /* Surfaces */
+  --color-ink: #0b0d11;       /* page background */
+  --color-panel: #0d1017;     /* cards / headers */
+  --color-panel2: #0f1420;    /* expanded / hover surface */
+  --color-raise: #141820;     /* row hover */
+  --color-well: #090c12;      /* inputs / inset */
+
+  /* Lines */
+  --color-line: #1e2330;
+  --color-line2: #161b26;
+  --color-hairline: #111520;
+
+  /* Text */
+  --color-bright: #e0e4ef;
+  --color-body: #c8cdd8;
+  --color-soft: #a0a8bc;
+  --color-note: #8a9ab8;
+  --color-mid: #5a6580;
+  --color-mut: #4a5570;
+  --color-dim: #3a4255;
+  --color-ghost: #2a3045;
+
+  /* Accent */
+  --color-accent: #8ab4f8;
+  --color-accent-bg: #1e2a40;
+  --color-accent-line: #2d4470;
+
+  /* Signals */
+  --color-ok: #2ecc71;
+  --color-warn: #f1c40f;
+  --color-bad: #e74c3c;
+}
+
+* { box-sizing: border-box; }
+
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: #111; }
+::-webkit-scrollbar-thumb { background: #333; border-radius: 2px; }
+
+@keyframes pulse-dot { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+@keyframes flash-dot { 0%, 100% { opacity: 1; } 50% { opacity: 0.2; } }
+
+/* Native date inputs on dark backgrounds */
+input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(0.6); cursor: pointer; }
