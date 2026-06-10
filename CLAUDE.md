@@ -15,7 +15,7 @@ Admins manage the preset list on the Admin page.
 ## Deploys
 
 - Frontend: push to `main` → GitHub Pages workflow deploys `dist/`. The live site deploys from `main` only; changes on feature branches will not appear on the site.
-- Backend: Railway deploys from `backend/`. Env vars: `DATABASE_URL`, `JWT_SECRET`, `ALLOWED_ORIGIN`, `APP_URL`, `TIMEZONE`, and SMTP settings (`SMTP_HOST`, `SMTP_PORT`, `SMTP_SECURE`, `SMTP_USER`, `SMTP_PASS`, `MAIL_FROM`) for email alerts. Email alerts are silently disabled if `SMTP_HOST` is unset.
+- Backend: Railway deploys from `backend/`. Env vars: `DATABASE_URL`, `JWT_SECRET`, `ALLOWED_ORIGIN`, `TIMEZONE`. The app sends no email — the Daily Summary page produces copyable text instead.
 
 ## Auth
 

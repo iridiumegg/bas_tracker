@@ -57,7 +57,7 @@ export default function LoginPage() {
               <Field label="Display Name" className="mb-3">
                 <Input type="text" value={displayName} onChange={e => setDisplayName(e.target.value)} required placeholder="e.g. Nathan Stewart" />
               </Field>
-              <Field label="Email (for alerts)" className="mb-3">
+              <Field label="Email (optional)" className="mb-3">
                 <Input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="you@es2built.com" />
               </Field>
             </>

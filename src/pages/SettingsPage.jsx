@@ -7,7 +7,6 @@ export default function SettingsPage() {
   const { user, setUser } = useAuth();
   const [displayName, setDisplayName] = useState(user?.name || "");
   const [email, setEmail] = useState(user?.email || "");
-  const [notify, setNotify] = useState(user?.notify_email ?? true);
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [error, setError] = useState("");
@@ -20,7 +19,7 @@ export default function SettingsPage() {
     setSaved(false);
     setSaving(true);
     try {
-      const body = { display_name: displayName, email, notify_email: notify };
+      const body = { display_name: displayName, email };
       if (newPassword) {
         body.password = newPassword;
         body.current_password = currentPassword;
@@ -46,16 +45,9 @@ export default function SettingsPage() {
         <Field label="Display Name" className="mb-3">
           <Input value={displayName} onChange={e => setDisplayName(e.target.value)} required />
         </Field>
-        <Field label="Email" className="mb-3">
+        <Field label="Email (optional)" className="mb-5">
           <Input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="you@es2built.com" />
         </Field>
-
-        <label className="flex items-center gap-2.5 mb-5 cursor-pointer select-none">
-          <input type="checkbox" checked={notify} onChange={e => setNotify(e.target.checked)} className="accent-[#8ab4f8]" />
-          <span className="text-[12px] text-soft">
-            Email me when someone checks something off, changes a status, or adds a note
-          </span>
-        </label>
 
         <div className="border-t border-line2 pt-4 mb-4">
           <div className="text-[10px] text-dim tracking-[0.1em] uppercase mb-3">Change Password (optional)</div>

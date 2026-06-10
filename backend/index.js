@@ -6,7 +6,6 @@ import jwt from "jsonwebtoken";
 import pg from "pg";
 import { readFileSync } from "fs";
 import { seedLegacyData } from "./seed.js";
-import { sendNotification } from "./email.js";
 
 const { Pool } = pg;
 const app = express();
@@ -19,7 +18,6 @@ const pool = new Pool({
 const JWT_SECRET = process.env.JWT_SECRET || "change-this-secret";
 const ALLOWED_ORIGIN = process.env.ALLOWED_ORIGIN || "https://iridiumegg.github.io";
 const TZ = process.env.TIMEZONE || "America/Chicago";
-const APP_URL = process.env.APP_URL || "https://iridiumegg.github.io/bas_tracker";
 
 app.use(cors({ origin: [ALLOWED_ORIGIN, "http://localhost:5173"], credentials: true }));
 app.use(express.json());
@@ -59,7 +57,7 @@ function signToken(u) {
 }
 
 function publicUser(u) {
-  return { id: u.id, name: u.display_name, username: u.username, email: u.email, role: u.role, notify_email: u.notify_email };
+  return { id: u.id, name: u.display_name, username: u.username, email: u.email, role: u.role };
 }
 
 function todayLocal() {
@@ -77,16 +75,6 @@ async function logActivity({ type, user, project, task, detail = "" }) {
   } catch (e) {
     console.error("Activity log failed:", e.message);
   }
-}
-
-// Fire-and-forget email to everyone with notifications on, except the actor.
-function notifyTeam(actorId, subject, body) {
-  pool.query(
-    "SELECT email FROM users WHERE notify_email AND active AND email IS NOT NULL AND email <> '' AND id <> $1",
-    [actorId]
-  )
-    .then(({ rows }) => sendNotification(rows.map(r => r.email), subject, `${body}\n\n${APP_URL}`))
-    .catch(e => console.error("Notify failed:", e.message));
 }
 
 // ── Auth ──────────────────────────────────────────────────────────────────────
@@ -144,7 +132,7 @@ app.get("/auth/me", auth, async (req, res) => {
 
 // Update own profile / notification preference / password
 app.put("/me", auth, async (req, res) => {
-  const { display_name, email, notify_email, password, current_password } = req.body;
+  const { display_name, email, password, current_password } = req.body;
   try {
     if (password) {
       const { rows } = await pool.query("SELECT password_hash FROM users WHERE id = $1", [req.user.id]);
@@ -155,10 +143,9 @@ app.put("/me", auth, async (req, res) => {
     const { rows } = await pool.query(
       `UPDATE users SET
          display_name = COALESCE($1, display_name),
-         email = COALESCE($2, email),
-         notify_email = COALESCE($3, notify_email)
-       WHERE id = $4 RETURNING *`,
-      [display_name ?? null, email ?? null, notify_email ?? null, req.user.id]
+         email = COALESCE($2, email)
+       WHERE id = $3 RETURNING *`,
+      [display_name ?? null, email ?? null, req.user.id]
     );
     res.json({ user: publicUser(rows[0]) });
   } catch {
@@ -171,7 +158,7 @@ app.put("/me", auth, async (req, res) => {
 app.get("/users", auth, async (_req, res) => {
   try {
     const { rows } = await pool.query(
-      "SELECT id, username, display_name, email, role, notify_email, active, created_at FROM users ORDER BY id"
+      "SELECT id, username, display_name, email, role, active, created_at FROM users ORDER BY id"
     );
     res.json(rows);
   } catch {
@@ -187,7 +174,7 @@ app.post("/users", auth, requireAdmin, async (req, res) => {
     const { rows } = await pool.query(
       `INSERT INTO users (username, display_name, email, password_hash, role)
        VALUES ($1, $2, $3, $4, $5)
-       RETURNING id, username, display_name, email, role, notify_email, active, created_at`,
+       RETURNING id, username, display_name, email, role, active, created_at`,
       [username.toLowerCase().trim(), display_name, email || null, hash, role === "admin" ? "admin" : "member"]
     );
     await logActivity({ type: "user_created", user: req.user, detail: `Added user ${display_name} (@${rows[0].username})` });
@@ -200,7 +187,7 @@ app.post("/users", auth, requireAdmin, async (req, res) => {
 
 app.put("/users/:id", auth, requireAdmin, async (req, res) => {
   const id = parseInt(req.params.id);
-  const { display_name, email, role, notify_email, active, password } = req.body;
+  const { display_name, email, role, active, password } = req.body;
   if (id === req.user.id && active === false) return res.status(400).json({ error: "You can't deactivate yourself" });
   if (id === req.user.id && role === "member") return res.status(400).json({ error: "You can't demote yourself" });
   try {
@@ -212,11 +199,10 @@ app.put("/users/:id", auth, requireAdmin, async (req, res) => {
          display_name = COALESCE($1, display_name),
          email = COALESCE($2, email),
          role = COALESCE($3, role),
-         notify_email = COALESCE($4, notify_email),
-         active = COALESCE($5, active)
-       WHERE id = $6
-       RETURNING id, username, display_name, email, role, notify_email, active, created_at`,
-      [display_name ?? null, email ?? null, role ?? null, notify_email ?? null, active ?? null, id]
+         active = COALESCE($4, active)
+       WHERE id = $5
+       RETURNING id, username, display_name, email, role, active, created_at`,
+      [display_name ?? null, email ?? null, role ?? null, active ?? null, id]
     );
     if (!rows[0]) return res.status(404).json({ error: "User not found" });
     res.json(rows[0]);
@@ -312,8 +298,6 @@ app.post("/projects", auth, async (req, res) => {
     );
     const project = rows[0];
     await logActivity({ type: "project_created", user: req.user, project, detail: project.name });
-    notifyTeam(req.user.id, `[BAS Workspace] ${req.user.name} created project "${project.name}"`,
-      `${req.user.name} created a new project: ${project.name}${client ? ` (${client})` : ""}.`);
     res.json(project);
   } catch {
     res.status(500).json({ error: "Server error" });
@@ -394,8 +378,6 @@ app.post("/projects/:id/tasks", auth, async (req, res) => {
     );
     const task = rows[0];
     await logActivity({ type: "task_created", user: req.user, project, task, detail: task.title });
-    notifyTeam(req.user.id, `[BAS Workspace] ${req.user.name} added a task in ${project.name}`,
-      `${req.user.name} added a task in ${project.name}:\n\n${task.title}${task.unit ? `\nUnit: ${task.unit}` : ""}\nPriority: ${task.priority}`);
     res.json(task);
   } catch {
     res.status(500).json({ error: "Server error" });
@@ -444,9 +426,6 @@ app.put("/tasks/:id", auth, async (req, res) => {
         user: req.user, project, task,
         detail: completed ? task.title : `${before.status} → ${status}`,
       });
-      const verb = completed ? "checked off" : `moved to ${status.replace("_", " ")}`;
-      notifyTeam(req.user.id, `[BAS Workspace] ${req.user.name} ${verb}: ${task.title}`,
-        `${req.user.name} ${verb} a task in ${project.name}:\n\n${task.title}${task.unit ? `\nUnit: ${task.unit}` : ""}\nStatus: ${before.status} → ${status}`);
     } else {
       await logActivity({ type: "task_updated", user: req.user, project, task, detail: task.title });
     }
@@ -507,8 +486,6 @@ app.post("/tasks/:id/notes", auth, async (req, res) => {
       type: "note_added", user: req.user,
       project: { id: task.project_id, name: task.project_name }, task, detail: content.trim(),
     });
-    notifyTeam(req.user.id, `[BAS Workspace] ${req.user.name} added a note on: ${task.title}`,
-      `${req.user.name} added a field note in ${task.project_name}:\n\nTask: ${task.title}\n\n"${content.trim()}"`);
     res.json(rows[0]);
   } catch {
     res.status(500).json({ error: "Server error" });

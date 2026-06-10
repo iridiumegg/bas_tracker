@@ -50,7 +50,7 @@ function UserRow({ u, isSelf, onSaved }) {
             {!u.active && <span className="ml-2 text-[8px] tracking-[0.1em] text-bad border border-bad/40 rounded-[2px] px-1.5 py-0.5">DISABLED</span>}
           </div>
           <div className="text-[11px] text-mut mt-0.5">
-            {u.email || "no email"} · alerts {u.notify_email ? "on" : "off"}
+            {u.email || "no email"}
           </div>
         </div>
         <div className="flex gap-2">
@@ -120,7 +120,7 @@ function AddUserForm({ onAdded }) {
         <Field label="Display Name">
           <Input value={form.display_name} onChange={e => set("display_name", e.target.value)} required placeholder="e.g. John Smith" />
         </Field>
-        <Field label="Email (for alerts)">
+        <Field label="Email (optional)">
           <Input type="email" value={form.email} onChange={e => set("email", e.target.value)} placeholder="jsmith@es2built.com" />
         </Field>
         <Field label="Temporary Password">
