@@ -1,0 +1,654 @@
+[
+  {
+    "meta": {
+      "id": "crystal-bridges",
+      "name": "CBMAA PH 2",
+      "subtitle": "BAS Retrofit",
+      "client": "ES2",
+      "source": "TAB Report Book 6-5-26",
+      "generated": "6/5/2026",
+      "label": "ES2 · Crystal Bridges Museum BAS Retrofit",
+      "phase": "Commissioning",
+      "categories": [
+        "All",
+        "Programming",
+        "Sensor Cal",
+        "EBTRON Verify",
+        "Airflow Review",
+        "Setpoint Update",
+        "FYI / No Action"
+      ]
+    },
+    "items": [
+      {
+        "id": 1,
+        "priority": "HIGH",
+        "unit": "CDWP-A7-01/02/03",
+        "category": "Programming",
+        "issue": "Fixed DP setpoint (6 PSI) causes over/under-flow depending on number of active CT cells.",
+        "action": "Update BAS program with 3 separate DP setpoints tied to number of active cooling tower cells.",
+        "source": "TAB Notes — Pump Section",
+        "status": "OPEN"
+      },
+      {
+        "id": 2,
+        "priority": "HIGH",
+        "unit": "CHWP-A7-01",
+        "category": "Programming",
+        "issue": "Fixed DP setpoint (8 PSI) causes over/under-flow with chiller/cell staging.",
+        "action": "Update BAS program with staged DP setpoints based on active chiller/CT cell count.",
+        "source": "TAB Notes — Pump Section",
+        "status": "OPEN"
+      },
+      {
+        "id": 3,
+        "priority": "MEDIUM",
+        "unit": "CDWP-A7-02",
+        "category": "Sensor Cal",
+        "issue": "Condenser water supply flow meter reads ~200 GPM low vs. accurate return meter.",
+        "action": "Calibrate supply-side flow meter. Verify BAS staging/efficiency logic uses corrected value.",
+        "source": "TAB Notes — CDWP-A7-02",
+        "status": "OPEN"
+      },
+      {
+        "id": 4,
+        "priority": "MEDIUM",
+        "unit": "CDWP-A7-03",
+        "category": "Sensor Cal",
+        "issue": "Condenser water supply flow meter reads ~200 GPM low vs. accurate return meter.",
+        "action": "Calibrate supply-side flow meter. Verify BAS staging/efficiency logic uses corrected value.",
+        "source": "TAB Notes — CDWP-A7-03",
+        "status": "OPEN"
+      },
+      {
+        "id": 5,
+        "priority": "MEDIUM",
+        "unit": "CHWP-A7-01",
+        "category": "Sensor Cal",
+        "issue": "CHW supply meter ~400 GPM low; return meter ~500 GPM low. Both inaccurate.",
+        "action": "Calibrate both CHW flow meters. Audit any BAS logic dependent on these readings.",
+        "source": "TAB Notes — CHWP-A7-01",
+        "status": "OPEN"
+      },
+      {
+        "id": 6,
+        "priority": "MEDIUM",
+        "unit": "ERU-A7-01",
+        "category": "EBTRON Verify",
+        "issue": "EBTRON gains applied: Return 0.54 / OSA 0.93 / Exhaust 1.20",
+        "action": "Confirm BAS is receiving accurate post-calibration readings. Validate airflow alarms/setpoints.",
+        "source": "TAB Notes — ERU-A7-01",
+        "status": "OPEN"
+      },
+      {
+        "id": 7,
+        "priority": "MEDIUM",
+        "unit": "ERU-A7-02",
+        "category": "EBTRON Verify",
+        "issue": "EBTRON gains applied: Return 1.06 / OSA 1.25 / Exhaust 0.86",
+        "action": "Confirm BAS readings post-calibration. Validate airflow alarms/setpoints.",
+        "source": "TAB Notes — ERU-A7-02",
+        "status": "OPEN"
+      },
+      {
+        "id": 8,
+        "priority": "MEDIUM",
+        "unit": "ERU-A7-03",
+        "category": "EBTRON Verify",
+        "issue": "EBTRON gains applied: Return 1.35 / OSA 1.14 / Exhaust 1.16. Supply grilles only total 1,475 of 2,600 CFM design.",
+        "action": "Confirm BAS readings post-calibration. Review ERU supply airflow setpoint — installed condition differs from design.",
+        "source": "TAB Notes — ERU-A7-03",
+        "status": "OPEN"
+      },
+      {
+        "id": 9,
+        "priority": "MEDIUM",
+        "unit": "ERU-A8-01",
+        "category": "EBTRON Verify",
+        "issue": "EBTRON gains applied: Return 0.91 / OSA 0.89 / Exhaust 0.85",
+        "action": "Confirm BAS readings post-calibration. Validate airflow alarms/setpoints.",
+        "source": "TAB Notes — ERU-A8-01",
+        "status": "OPEN"
+      },
+      {
+        "id": 10,
+        "priority": "MEDIUM",
+        "unit": "ERU-A9-01",
+        "category": "EBTRON Verify",
+        "issue": "EBTRON gains applied: Return 0.93 / OSA 1.90 / Exhaust 1.00. OSA gain is notably high.",
+        "action": "Spot-check OSA reading in WebCTRL — 1.90 gain is significant. Validate post-cal airflow values.",
+        "source": "TAB Notes — ERU-A9-01",
+        "status": "OPEN"
+      },
+      {
+        "id": 11,
+        "priority": "MEDIUM",
+        "unit": "ERU-A9-02",
+        "category": "EBTRON Verify",
+        "issue": "EBTRON gains applied: Return 0.91 / OSA 1.23 / Exhaust 1.03",
+        "action": "Confirm BAS readings post-calibration. Validate airflow alarms/setpoints.",
+        "source": "TAB Notes — ERU-A9-02",
+        "status": "OPEN"
+      },
+      {
+        "id": 12,
+        "priority": "MEDIUM",
+        "unit": "ERU-A9-03",
+        "category": "EBTRON Verify",
+        "issue": "EBTRON gains applied: Return 0.98 / OSA 1.54 / Exhaust 1.35. OSA gain elevated.",
+        "action": "Spot-check OSA reading in WebCTRL. Validate post-cal airflow values.",
+        "source": "TAB Notes — ERU-A9-03",
+        "status": "OPEN"
+      },
+      {
+        "id": 13,
+        "priority": "MEDIUM",
+        "unit": "FCU-A9-01",
+        "category": "Airflow Review",
+        "issue": "Unit short of design CFM at high speed (741 vel grid / 815 pitot). Both below design.",
+        "action": "Check BAS for min airflow alarms on this unit. Coordinate with mechanical on root cause.",
+        "source": "TAB Notes — FCU-A9-01",
+        "status": "OPEN"
+      },
+      {
+        "id": 14,
+        "priority": "MEDIUM",
+        "unit": "ERU-A7-03",
+        "category": "Airflow Review",
+        "issue": "Supply grilles total 1,475 CFM vs. 2,600 CFM design. TAB set return/exhaust to match offset.",
+        "action": "Review ERU-A7-03 supply airflow setpoint in BAS — adjust to reflect installed airflow if needed.",
+        "source": "TAB Notes — ERU-A7-03",
+        "status": "OPEN"
+      },
+      {
+        "id": 15,
+        "priority": "LOW",
+        "unit": "VAV-A9-18",
+        "category": "Setpoint Update",
+        "issue": "Duct to grille #2 deleted. Design CFM reduced from 500 → 250 CFM for that outlet.",
+        "action": "Update VAV-A9-18 zone setpoints in BAS to reflect reduced design CFM for grille #2.",
+        "source": "TAB Notes — VAV-A9-18",
+        "status": "OPEN"
+      },
+      {
+        "id": 16,
+        "priority": "LOW",
+        "unit": "VAV-A9-20",
+        "category": "Setpoint Update",
+        "issue": "One supply grille in area 9-204 deleted. 300 CFM redistributed to 4 remaining grilles.",
+        "action": "Verify zone setpoint for VAV-A9-20 still matches total design CFM. Update if needed.",
+        "source": "TAB Notes — VAV-A9-20",
+        "status": "OPEN"
+      },
+      {
+        "id": 17,
+        "priority": "LOW",
+        "unit": "AHU-A8-01",
+        "category": "FYI / No Action",
+        "issue": "Return grilles sized for 3,200 CFM but unit design return is 2,650 CFM. Grilles will read low.",
+        "action": "No BAS action needed. Note in as-builts to prevent future misdiagnosis of 'low return' condition.",
+        "source": "TAB Notes — AHU-A8-01",
+        "status": "NOTED"
+      },
+      {
+        "id": 18,
+        "priority": "LOW",
+        "unit": "FCU-A7-06",
+        "category": "FYI / No Action",
+        "issue": "Unit running at 80% with filter removed. Two motors installed on unit.",
+        "action": "Note in BAS asset data if runtime/maintenance tracking is active on this unit.",
+        "source": "TAB Notes — FCU-A7-06",
+        "status": "NOTED"
+      }
+    ]
+  },
+  {
+    "meta": {
+      "id": "awsom",
+      "name": "Alice Walton School of Medicine",
+      "subtitle": "Bentonville",
+      "client": "AWSOM",
+      "source": "TAB Final Report 23 05 93",
+      "generated": "12/23/2025",
+      "label": "AWSOM · Alice Walton School of Medicine — Bentonville",
+      "phase": "Commissioning",
+      "categories": [
+        "All",
+        "Programming",
+        "VFD / Setpoint",
+        "Setpoint Verify",
+        "Setpoint Update",
+        "Airflow Review",
+        "Sensor Verify",
+        "FYI / Verify",
+        "FYI / Document"
+      ]
+    },
+    "items": [
+      {
+        "id": 1,
+        "priority": "HIGH",
+        "unit": "RF-02",
+        "category": "Programming",
+        "issue": "Fan designed to modulate on building pressure but ran at 100% during TAB. Modulation sequence not yet commissioned.",
+        "action": "Complete BAS modulation setup for RF-02. Once active, cap Max VFD speed at 70% per TAB directive.",
+        "source": "TAB Notes — RF-02",
+        "status": "OPEN"
+      },
+      {
+        "id": 2,
+        "priority": "HIGH",
+        "unit": "EF-01",
+        "category": "VFD / Setpoint",
+        "issue": "Fan rated to operate at 67 Hz. TAB found VFD running at 53 Hz — delivering 22,185 CFM vs. 22,500 CFM design.",
+        "action": "Verify BAS VFD frequency cap for EF-01. Raise upper limit to 67 Hz if BAS is restricting output.",
+        "source": "TAB Notes — EF-01",
+        "status": "OPEN"
+      },
+      {
+        "id": 3,
+        "priority": "HIGH",
+        "unit": "EF-02",
+        "category": "VFD / Setpoint",
+        "issue": "Fan rated to operate at 67 Hz. TAB found VFD running at 53 Hz — delivering 22,220 CFM vs. 22,500 CFM design.",
+        "action": "Verify BAS VFD frequency cap for EF-02. Raise upper limit to 67 Hz if BAS is restricting output.",
+        "source": "TAB Notes — EF-02",
+        "status": "OPEN"
+      },
+      {
+        "id": 4,
+        "priority": "HIGH",
+        "unit": "EF-04",
+        "category": "Airflow Review",
+        "issue": "Fan at 100% but cannot achieve design airflow to duct trunk serving grilles 26–31. Likely mechanical obstruction.",
+        "action": "Flag in BAS asset notes. If airflow tracking/alarms exist on EF-04, expect shortfall on that trunk until mechanical issue is resolved.",
+        "source": "TAB Notes — EF-04",
+        "status": "OPEN"
+      },
+      {
+        "id": 5,
+        "priority": "MEDIUM",
+        "unit": "AHU-02 / Return Fan",
+        "category": "Setpoint Verify",
+        "issue": "Return fan set to maintain 0.75\" suction pressure. Design TSP 1.7\", ESP 1.2\".",
+        "action": "Confirm 0.75\" suction pressure setpoint is active and correct in BAS return fan control loop.",
+        "source": "TAB Notes — AHU-02",
+        "status": "OPEN"
+      },
+      {
+        "id": 6,
+        "priority": "MEDIUM",
+        "unit": "AHU-01-S",
+        "category": "Setpoint Verify",
+        "issue": "TAB documented SP reset range: 1.0–1.5\".",
+        "action": "Confirm BAS static pressure reset setpoint range matches 1.0–1.5\" for AHU-01-S.",
+        "source": "TAB Notes — AHU-01-S/SPP-01",
+        "status": "OPEN"
+      },
+      {
+        "id": 7,
+        "priority": "MEDIUM",
+        "unit": "AHU-02",
+        "category": "Setpoint Verify",
+        "issue": "TAB documented SP reset range: 1.0–1.5\".",
+        "action": "Confirm BAS static pressure reset setpoint range matches 1.0–1.5\" for AHU-02.",
+        "source": "TAB Notes — AHU-02/SPP-01",
+        "status": "OPEN"
+      },
+      {
+        "id": 8,
+        "priority": "MEDIUM",
+        "unit": "AHU-03",
+        "category": "Setpoint Verify",
+        "issue": "TAB documented SP reset range: 1.0–2.0\" (wider than other AHUs).",
+        "action": "Confirm BAS static pressure reset setpoint range matches 1.0–2.0\" for AHU-03.",
+        "source": "TAB Notes — AHU-03/SPP-01",
+        "status": "OPEN"
+      },
+      {
+        "id": 9,
+        "priority": "MEDIUM",
+        "unit": "AHU-05",
+        "category": "Setpoint Verify",
+        "issue": "TAB documented SP reset range: 1.0–1.5\". Min OSA: 10,350 CFM.",
+        "action": "Confirm BAS SP reset range matches 1.0–1.5\" and minimum OSA setpoint is 10,350 CFM for AHU-05.",
+        "source": "TAB Notes — AHU-05/SPP-01",
+        "status": "OPEN"
+      },
+      {
+        "id": 10,
+        "priority": "MEDIUM",
+        "unit": "AHU-01-WA",
+        "category": "Setpoint Verify",
+        "issue": "ERU exhaust fan set to maintain 0.60\" duct static. Exhaust fan rated 25,000 CFM; heat wheel exhaust 11,250 CFM / OSA 11,250 CFM.",
+        "action": "Verify 0.60\" exhaust duct static setpoint is programmed in BAS for AHU-01-WA exhaust fan.",
+        "source": "TAB Notes — AHU-01-WA",
+        "status": "OPEN"
+      },
+      {
+        "id": 11,
+        "priority": "MEDIUM",
+        "unit": "AHU-04-WA",
+        "category": "Setpoint Verify",
+        "issue": "ERU exhaust fan set to maintain 0.60\" duct static. Exhaust fan rated 18,000 CFM; heat wheel exhaust 8,100 CFM / OSA 8,900 CFM.",
+        "action": "Verify 0.60\" exhaust duct static setpoint is programmed in BAS for AHU-04-WA exhaust fan.",
+        "source": "TAB Notes — AHU-04-WA",
+        "status": "OPEN"
+      },
+      {
+        "id": 12,
+        "priority": "MEDIUM",
+        "unit": "PCHWP-01",
+        "category": "Sensor Verify",
+        "issue": "TAB recorded CHW DP sensor readings at multiple staging conditions: 8 PSI (2 pumps/CH-1 only), 22 PSI (4 pumps/both chillers), 9 PSI (4 pumps/CH-1 only).",
+        "action": "Verify BAS CHW DP control setpoints and pump staging logic align with these observed operating bands.",
+        "source": "TAB Notes — PCHWP-01",
+        "status": "OPEN"
+      },
+      {
+        "id": 13,
+        "priority": "MEDIUM",
+        "unit": "CH-01",
+        "category": "Setpoint Verify",
+        "issue": "BAS controlling heat recovery side to 6 PSI chiller DP per manufacturer recommendation.",
+        "action": "Verify 6 PSI chiller DP setpoint is active and correctly programmed for CH-01 heat recovery side.",
+        "source": "TAB Notes — CH-01",
+        "status": "OPEN"
+      },
+      {
+        "id": 14,
+        "priority": "MEDIUM",
+        "unit": "CH-01 / CH-02",
+        "category": "Setpoint Verify",
+        "issue": "BAS controlling CHW pumps via system DP and bypass valve to maintain 3 PSI minimum chiller DP for flow protection.",
+        "action": "Verify CHW bypass control logic is functioning. Confirm 3 PSI minimum DP setpoint is correct for both chillers.",
+        "source": "TAB Notes — CH-01 / CH-02",
+        "status": "OPEN"
+      },
+      {
+        "id": 15,
+        "priority": "MEDIUM",
+        "unit": "VAV-2-24 (AHU-02)",
+        "category": "Setpoint Update",
+        "issue": "Plans showed 11 grilles but only 9 installed. TAB reduced design max airflow from 2,080 → 1,700 CFM.",
+        "action": "Update VAV-2-24 max cooling CFM setpoint in BAS from 2,080 to 1,700 CFM.",
+        "source": "TAB Notes — AHU-02/VAV-2-24",
+        "status": "OPEN"
+      },
+      {
+        "id": 16,
+        "priority": "MEDIUM",
+        "unit": "VAV-2-17 (AHU-02)",
+        "category": "Setpoint Update",
+        "issue": "Installed grilles only total 340 CFM vs. VAV box design of 380 CFM. TAB set box to 340 CFM actual.",
+        "action": "Confirm BAS max cooling setpoint for VAV-2-17 is set to 340 CFM, not 380 CFM.",
+        "source": "TAB Notes — AHU-02/VAV-2-17",
+        "status": "OPEN"
+      },
+      {
+        "id": 17,
+        "priority": "LOW",
+        "unit": "FCU-12",
+        "category": "FYI / Verify",
+        "issue": "Controls contractor confirmed cooling only — no heating capability. HW coil/valve present but heating disabled per controls.",
+        "action": "Confirm BAS is not attempting to enable heating on FCU-12 and not generating heating failure alarms.",
+        "source": "TAB Notes — FCU-12",
+        "status": "OPEN"
+      },
+      {
+        "id": 18,
+        "priority": "LOW",
+        "unit": "All VAV Terminal Boxes",
+        "category": "FYI / Document",
+        "issue": "BAS LAT limit confirmed at 85°F for all VAV heating by TAB.",
+        "action": "No change needed. Document as TAB-confirmed. Verify BAS limit is 85°F if audited.",
+        "source": "Report Summary — Terminal Boxes",
+        "status": "NOTED"
+      },
+      {
+        "id": 19,
+        "priority": "LOW",
+        "unit": "EF-03",
+        "category": "FYI / Document",
+        "issue": "Fan inaccessible at installed location. Motor RPM and full data could not be verified by TAB.",
+        "action": "Note in BAS asset records. Monitor for runtime faults. Flag for physical access resolution.",
+        "source": "TAB Notes — EF-03",
+        "status": "NOTED"
+      }
+    ]
+  },
+  {
+    "meta": {
+      "id": "cbmaa-retro",
+      "name": "CBMAA Retro",
+      "subtitle": "Retrocommissioning",
+      "client": "ES2",
+      "phase": "Retro",
+      "label": "ES2 · CBMAA Retrocommissioning",
+      "source": "Field Task Log",
+      "generated": "6/5/2026",
+      "categories": [
+        "All",
+        "Install",
+        "Commissioning",
+        "Programming",
+        "Field Work",
+        "Coordination",
+        "Investigation",
+        "Planning"
+      ]
+    },
+    "items": [
+      {
+        "id": 1,
+        "priority": "HIGH",
+        "unit": "AHU-1/2",
+        "category": "Install",
+        "issue": "AHU-1/2 installation pending.",
+        "action": "Complete AHU-1/2 installation.",
+        "source": "Field Task Log",
+        "status": "RESOLVED"
+      },
+      {
+        "id": 2,
+        "priority": "HIGH",
+        "unit": "VAV-1 thru 5",
+        "category": "Install",
+        "issue": "VAV 1–5 installation pending.",
+        "action": "Complete VAV 1–5 installation.",
+        "source": "Field Task Log",
+        "status": "RESOLVED"
+      },
+      {
+        "id": 3,
+        "priority": "HIGH",
+        "unit": "FCU",
+        "category": "Install",
+        "issue": "FCU installation pending.",
+        "action": "Complete FCU installation.",
+        "source": "Field Task Log",
+        "status": "RESOLVED"
+      },
+      {
+        "id": 4,
+        "priority": "HIGH",
+        "unit": "All Devices",
+        "category": "Commissioning",
+        "issue": "Devices installed but not yet commissioned.",
+        "action": "Commission all installed devices. Verify BAS points and operation.",
+        "source": "Field Task Log",
+        "status": "RESOLVED"
+      },
+      {
+        "id": 5,
+        "priority": "LOW",
+        "unit": "Controls Panels",
+        "category": "Field Work",
+        "issue": "4 control panel squares missing identification stickers.",
+        "action": "Apply stickers to all 4 squares.",
+        "source": "Field Task Log",
+        "status": "RESOLVED"
+      },
+      {
+        "id": 6,
+        "priority": "MEDIUM",
+        "unit": "CAT GEN",
+        "category": "Coordination",
+        "issue": "Modbus integration requirements for CAT generator not confirmed.",
+        "action": "Email stakeholders regarding CAT GEN Modbus integration scope and requirements.",
+        "source": "Field Task Log",
+        "status": "RESOLVED"
+      },
+      {
+        "id": 7,
+        "priority": "HIGH",
+        "unit": "AHU-2",
+        "category": "Programming",
+        "issue": "Mixed air temperature (MAT) sensor or sequence not yet verified in BAS.",
+        "action": "Verify AHU-2 MAT sensor reading and confirm correct use in economizer/mixing logic.",
+        "source": "Field Task Log",
+        "status": "OPEN"
+      },
+      {
+        "id": 8,
+        "priority": "MEDIUM",
+        "unit": "Phase 2 / FLW",
+        "category": "Coordination",
+        "issue": "Phase 2 scope and FLW/bathroom IP addressing not confirmed with team.",
+        "action": "Email team regarding Phase 2 plan and FLW/bathroom IP address coordination.",
+        "source": "Field Task Log",
+        "status": "RESOLVED"
+      },
+      {
+        "id": 9,
+        "priority": "MEDIUM",
+        "unit": "Trail Bathroom",
+        "category": "Field Work",
+        "issue": "Trail bathroom controls due for recontrol.",
+        "action": "Complete trail bathroom recontrol. Verify BAS points after.",
+        "source": "Field Task Log",
+        "status": "RESOLVED"
+      },
+      {
+        "id": 10,
+        "priority": "MEDIUM",
+        "unit": "FLW House",
+        "category": "Field Work",
+        "issue": "FLW House controls due for recontrol.",
+        "action": "Complete FLW House recontrol.",
+        "source": "Field Task Log",
+        "status": "RESOLVED"
+      },
+      {
+        "id": 11,
+        "priority": "MEDIUM",
+        "unit": "FLW House",
+        "category": "Field Work",
+        "issue": "FLW House IP connectivity not yet tested post-recontrol.",
+        "action": "Run IP test on FLW House after recontrol. Confirm BAS communication.",
+        "source": "Field Task Log",
+        "status": "RESOLVED"
+      },
+      {
+        "id": 12,
+        "priority": "MEDIUM",
+        "unit": "FLW House",
+        "category": "Programming",
+        "issue": "FLW House programming and graphics not yet complete.",
+        "action": "Complete BAS programming and graphics for FLW House.",
+        "source": "Field Task Log",
+        "status": "RESOLVED"
+      },
+      {
+        "id": 13,
+        "priority": "MEDIUM",
+        "unit": "Phase 2",
+        "category": "Coordination",
+        "issue": "Phase 2 proof documents need review.",
+        "action": "Review Phase 2 proof. Flag any discrepancies or required changes.",
+        "source": "Field Task Log",
+        "status": "RESOLVED"
+      },
+      {
+        "id": 14,
+        "priority": "HIGH",
+        "unit": "CRAC",
+        "category": "Programming",
+        "issue": "CRAC unit lead/lag logic not yet programmed.",
+        "action": "Program and test lead/lag staging logic for CRAC units in BAS.",
+        "source": "Field Task Log",
+        "status": "OPEN"
+      },
+      {
+        "id": 15,
+        "priority": "MEDIUM",
+        "unit": "FCU-E2",
+        "category": "Field Work",
+        "issue": "FCU-E2 reported faulty — needs repair.",
+        "action": "Repair FCU-E2. Verify normal operation and BAS point restoration after.",
+        "source": "Field Task Log",
+        "status": "RESOLVED"
+      },
+      {
+        "id": 16,
+        "priority": "HIGH",
+        "unit": "PXCM16 / PNL23",
+        "category": "Investigation",
+        "issue": "Two CHW plant controllers exist (PXCM16 and PNL23). Functional differences unknown. Affects Phase 4 and 9 scope.",
+        "action": "Investigate how PXCM16 and PNL23 differ. Document findings and mend Phase 4/9 plans as needed.",
+        "source": "Field Task Log",
+        "status": "OPEN"
+      },
+      {
+        "id": 17,
+        "priority": "MEDIUM",
+        "unit": "AHU-4",
+        "category": "Field Work",
+        "issue": "AHU-4 thermostats believed to be located in the vault — not yet confirmed.",
+        "action": "Locate AHU-4 TSTATs in the vault. Document location for future access.",
+        "source": "Field Task Log",
+        "status": "OPEN"
+      },
+      {
+        "id": 18,
+        "priority": "MEDIUM",
+        "unit": "AHU-3/4 Panel",
+        "category": "Field Work",
+        "issue": "AHU-3/4 control panel wiring labels are incorrect or missing.",
+        "action": "Relabel all wires in AHU-3/4 panel to match as-built documentation.",
+        "source": "Field Task Log",
+        "status": "OPEN"
+      },
+      {
+        "id": 19,
+        "priority": "HIGH",
+        "unit": "AHU-7 / AHU-8",
+        "category": "Programming",
+        "issue": "Flow meters on AHU-7 and AHU-8 not yet configured in BAS.",
+        "action": "Configure AHU-7 and AHU-8 flow meters in BAS. Verify readings against design.",
+        "source": "Field Task Log",
+        "status": "OPEN"
+      },
+      {
+        "id": 20,
+        "priority": "MEDIUM",
+        "unit": "Graphics",
+        "category": "Coordination",
+        "issue": "Engineering graphics not yet received.",
+        "action": "Ping engineering team for graphics deliverables. Set follow-up deadline.",
+        "source": "Field Task Log",
+        "status": "OPEN"
+      },
+      {
+        "id": 21,
+        "priority": "HIGH",
+        "unit": "Office VAVs",
+        "category": "Planning",
+        "issue": "Office VAV recontrol scope has no organized plan of action.",
+        "action": "Develop and document a plan of action for office VAV recontrol sequence.",
+        "source": "Field Task Log",
+        "status": "OPEN"
+      }
+    ]
+  }
+]

@@ -15,16 +15,45 @@ async function req(path, options = {}) {
   return data;
 }
 
+const post = (path, body) => req(path, { method: "POST", body: JSON.stringify(body) });
+const put = (path, body) => req(path, { method: "PUT", body: JSON.stringify(body) });
+const del = (path) => req(path, { method: "DELETE" });
+
 export const api = {
-  login: (username, password) => req("/auth/login", { method: "POST", body: JSON.stringify({ username, password }) }),
-  register: (username, display_name, password, signup_code) => req("/auth/register", { method: "POST", body: JSON.stringify({ username, display_name, password, signup_code }) }),
+  // Auth
+  needsSetup: () => req("/auth/needs-setup"),
+  setup: (body) => post("/auth/setup", body),
+  login: (username, password) => post("/auth/login", { username, password }),
   me: () => req("/auth/me"),
+  updateMe: (body) => put("/me", body),
 
-  getStatuses: (projectId) => req(`/projects/${projectId}/statuses`),
-  setStatus: (projectId, itemId, status) =>
-    req(`/projects/${projectId}/items/${itemId}/status`, { method: "PUT", body: JSON.stringify({ status }) }),
+  // Users
+  getUsers: () => req("/users"),
+  createUser: (body) => post("/users", body),
+  updateUser: (id, body) => put(`/users/${id}`, body),
 
-  getNotes: (projectId, itemId) => req(`/projects/${projectId}/items/${itemId}/notes`),
-  addNote: (projectId, itemId, content) =>
-    req(`/projects/${projectId}/items/${itemId}/notes`, { method: "POST", body: JSON.stringify({ content }) }),
+  // Settings / status bar
+  getSettings: () => req("/settings"),
+  setStatusBar: (message) => put("/settings/status", { message }),
+  setStatusOptions: (options) => put("/settings/status-options", { options }),
+
+  // Projects
+  getProjects: () => req("/projects"),
+  getProject: (slug) => req(`/projects/by-slug/${slug}`),
+  createProject: (body) => post("/projects", body),
+  updateProject: (id, body) => put(`/projects/${id}`, body),
+  archiveProject: (id) => del(`/projects/${id}`),
+
+  // Tasks
+  createTask: (projectId, body) => post(`/projects/${projectId}/tasks`, body),
+  updateTask: (id, body) => put(`/tasks/${id}`, body),
+  archiveTask: (id) => del(`/tasks/${id}`),
+
+  // Notes
+  getNotes: (taskId) => req(`/tasks/${taskId}/notes`),
+  addNote: (taskId, content) => post(`/tasks/${taskId}/notes`, { content }),
+
+  // Activity & summary
+  getActivity: (params = {}) => req(`/activity?${new URLSearchParams(params)}`),
+  getSummary: (date, scope) => req(`/summary?${new URLSearchParams({ date, scope })}`),
 };
