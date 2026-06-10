@@ -99,8 +99,9 @@ export default function Home() {
   const [showNew, setShowNew] = useState(false);
 
   const load = useCallback(() => {
-    setLoadError("");
-    api.getProjects().then(setProjects).catch(e => { setProjects([]); setLoadError(e.message); });
+    api.getProjects()
+      .then(p => { setProjects(p); setLoadError(""); })
+      .catch(e => { setProjects([]); setLoadError(e.message); });
   }, []);
 
   useEffect(load, [load]);
