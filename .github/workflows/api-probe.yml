@@ -2,6 +2,9 @@ name: API Probe (debug)
 
 on:
   workflow_dispatch:
+  push:
+    branches: [claude/clever-cerf-ntovo6]
+    paths: ['.github/workflows/api-probe.yml', '.probe-trigger']
 
 jobs:
   probe:
