@@ -58,6 +58,7 @@ export const api = {
   // Notes
   getNotes: (taskId) => req(`/tasks/${taskId}/notes`),
   addNote: (taskId, content) => post(`/tasks/${taskId}/notes`, { content }),
+  updateNote: (noteId, body) => put(`/notes/${noteId}`, body),
 
   // Activity & summary
   getActivity: (params = {}) => req(`/activity?${new URLSearchParams(params)}`),

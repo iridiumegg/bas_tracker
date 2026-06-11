@@ -76,6 +76,69 @@ function TaskForm({ task, project, users, onSaved, onCancel }) {
   );
 }
 
+function NoteRow({ note, onChanged }) {
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState(note.content);
+  const [busy, setBusy] = useState(false);
+
+  const update = async (body) => {
+    if (busy) return;
+    setBusy(true);
+    try {
+      onChanged(await api.updateNote(note.id, body));
+      setEditing(false);
+    } catch (e) {
+      console.error("Note update failed", e);
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const actionCls = "bg-transparent border-0 p-0 font-mono text-[10px] cursor-pointer text-ghost hover:text-soft disabled:opacity-50";
+
+  return (
+    <div className={`bg-well border border-line2 rounded-[3px] px-2.5 py-2 ${note.resolved ? "opacity-70" : ""}`}>
+      {editing ? (
+        <>
+          <Textarea rows={2} value={draft} onChange={e => setDraft(e.target.value)} className="!text-[12px]" autoFocus />
+          <div className="flex gap-3 mt-1.5">
+            <button className={`${actionCls} !text-accent`} disabled={busy || !draft.trim()} onClick={() => update({ content: draft.trim() })}>
+              {busy ? "Saving…" : "Save"}
+            </button>
+            <button className={actionCls} disabled={busy} onClick={() => { setEditing(false); setDraft(note.content); }}>
+              Cancel
+            </button>
+          </div>
+        </>
+      ) : (
+        <>
+          <div className={`text-[12px] leading-relaxed whitespace-pre-wrap ${note.resolved ? "text-mut" : "text-note"}`}>
+            {note.content}
+          </div>
+          <div className="flex items-center gap-3 mt-1 flex-wrap">
+            <span className="text-[10px] text-ghost">
+              {note.created_by_name} · {fmtTime(note.created_at)}{note.edited_at ? " · edited" : ""}
+            </span>
+            {note.resolved && (
+              <span className="text-[10px] text-ok">✓ resolved by {note.resolved_by_name} · {fmtTime(note.resolved_at)}</span>
+            )}
+            <span className="ml-auto flex gap-3">
+              {!note.resolved && <button className={actionCls} disabled={busy} onClick={() => setEditing(true)}>Edit</button>}
+              <button
+                className={`${actionCls} ${note.resolved ? "" : "hover:!text-ok"}`}
+                disabled={busy}
+                onClick={() => update({ resolved: !note.resolved })}
+              >
+                {note.resolved ? "Reopen" : "Resolve"}
+              </button>
+            </span>
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
 function Notes({ task }) {
   const [notes, setNotes] = useState(null);
   const [draft, setDraft] = useState("");
@@ -105,10 +168,7 @@ function Notes({ task }) {
       {notes?.length > 0 && (
         <div className="mb-2.5 flex flex-col gap-1.5">
           {notes.map(n => (
-            <div key={n.id} className="bg-well border border-line2 rounded-[3px] px-2.5 py-2">
-              <div className="text-[12px] text-note leading-relaxed whitespace-pre-wrap">{n.content}</div>
-              <div className="text-[10px] text-ghost mt-1">{n.created_by_name} · {fmtTime(n.created_at)}</div>
-            </div>
+            <NoteRow key={n.id} note={n} onChanged={u => setNotes(prev => prev.map(x => x.id === u.id ? u : x))} />
           ))}
         </div>
       )}
