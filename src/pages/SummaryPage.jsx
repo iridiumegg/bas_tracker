@@ -7,14 +7,17 @@ import { Button, Input, SectionLabel } from "../components/ui.jsx";
 const SECTION_DEFS = [
   { key: "completed", types: ["task_completed"], title: "Completed / Checked Off", color: "#2ecc71", bullet: "[x]" },
   { key: "statuses", types: ["status_changed"], title: "Status Changes", color: "#f1c40f", bullet: "[~]" },
-  { key: "notes", types: ["note_added"], title: "Field Notes", color: "#8a9ab8", bullet: "[-]" },
+  { key: "notes", types: ["note_added", "note_resolved"], title: "Field Notes", color: "#8a9ab8", bullet: "[-]" },
   { key: "created", types: ["task_created"], title: "New Tasks Added", color: "#8ab4f8", bullet: "[+]" },
 ];
 
 function describe(a, sectionKey) {
   if (sectionKey === "completed") return a.task_title || a.detail;
   if (sectionKey === "statuses") return `${a.task_title} — ${a.detail.replace(/_/g, " ")}`;
-  if (sectionKey === "notes") return `${a.task_title}: "${a.detail}"`;
+  if (sectionKey === "notes") {
+    const prefix = a.type === "note_resolved" ? "resolved — " : "";
+    return `${a.task_title}: ${prefix}"${a.detail}"`;
+  }
   return a.task_title || a.detail;
 }
 

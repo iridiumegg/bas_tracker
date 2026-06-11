@@ -459,7 +459,8 @@ app.delete("/tasks/:id", auth, async (req, res) => {
 app.get("/tasks/:id/notes", auth, async (req, res) => {
   try {
     const { rows } = await pool.query(
-      "SELECT id, content, created_by_name, created_at FROM task_notes WHERE task_id = $1 ORDER BY created_at",
+      `SELECT id, content, created_by_name, created_at, edited_at, resolved, resolved_by_name, resolved_at
+       FROM task_notes WHERE task_id = $1 ORDER BY created_at`,
       [parseInt(req.params.id)]
     );
     res.json(rows);
@@ -487,6 +488,50 @@ app.post("/tasks/:id/notes", auth, async (req, res) => {
       project: { id: task.project_id, name: task.project_name }, task, detail: content.trim(),
     });
     res.json(rows[0]);
+  } catch {
+    res.status(500).json({ error: "Server error" });
+  }
+});
+
+app.put("/notes/:id", auth, async (req, res) => {
+  const id = parseInt(req.params.id);
+  const { content, resolved } = req.body;
+  if (content !== undefined && !content?.trim()) return res.status(400).json({ error: "Empty note" });
+  try {
+    const { rows: nr } = await pool.query(
+      `SELECT n.*, t.title AS task_title, t.project_id, p.name AS project_name
+       FROM task_notes n JOIN tasks t ON t.id = n.task_id JOIN projects p ON p.id = t.project_id
+       WHERE n.id = $1`, [id]
+    );
+    if (!nr[0]) return res.status(404).json({ error: "Note not found" });
+    const before = nr[0];
+    const contentChanged = content !== undefined && content.trim() !== before.content;
+    const resolvedChanged = resolved !== undefined && resolved !== before.resolved;
+
+    const { rows } = await pool.query(
+      `UPDATE task_notes SET
+         content = COALESCE($1, content),
+         edited_at = CASE WHEN $2 THEN NOW() ELSE edited_at END,
+         resolved = COALESCE($3, resolved),
+         resolved_by_name = CASE WHEN $4 THEN (CASE WHEN $3 THEN $5 ELSE NULL END) ELSE resolved_by_name END,
+         resolved_at = CASE WHEN $4 THEN (CASE WHEN $3 THEN NOW() ELSE NULL END) ELSE resolved_at END
+       WHERE id = $6
+       RETURNING id, content, created_by_name, created_at, edited_at, resolved, resolved_by_name, resolved_at`,
+      [content?.trim() ?? null, contentChanged, resolved ?? null, resolvedChanged, req.user.name, id]
+    );
+    const note = rows[0];
+
+    const project = { id: before.project_id, name: before.project_name };
+    const task = { id: before.task_id, title: before.task_title };
+    if (resolvedChanged) {
+      await logActivity({
+        type: note.resolved ? "note_resolved" : "note_reopened",
+        user: req.user, project, task, detail: note.content,
+      });
+    } else if (contentChanged) {
+      await logActivity({ type: "note_edited", user: req.user, project, task, detail: note.content });
+    }
+    res.json(note);
   } catch {
     res.status(500).json({ error: "Server error" });
   }
